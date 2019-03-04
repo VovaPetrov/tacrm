@@ -10,10 +10,14 @@ namespace WebApplicationMVC.Controllers
     [Authorize]
     public class EmployeesController : Controller
     {
+        ApplicationDbContext db;
+        public EmployeesController()
+        {
+            db = new ApplicationDbContext();
+        }
         // GET: Employees
         public ActionResult Index()
-        {
-            var db = new ApplicationDbContext();
+        {           
             string userId = User.Identity.GetUserId();
             var model = db.Users.Where(e => e.Id!=userId && e.EmailConfirmed).ToList();
             return View(model);
@@ -21,7 +25,6 @@ namespace WebApplicationMVC.Controllers
         [HttpPost]
         public ActionResult EditUser(string Id,string LastName,string FirstName,string MiddleName,string Email,string Tel)
         {
-            var db = new ApplicationDbContext();
             var User = db.Users.Where(e => String.Equals(e.Id,Id)).FirstOrDefault();
             if (User != null)
             {
@@ -37,7 +40,6 @@ namespace WebApplicationMVC.Controllers
         [HttpPost]
         public ContentResult DeleteUser(string Id)
         {
-            var db = new ApplicationDbContext();
             var User = db.Users.Where(e => String.Equals(e.Id, Id)).FirstOrDefault();
             User.EmailConfirmed = false;
             string fullName = $"{User.FirstName} {User.LastName}";
