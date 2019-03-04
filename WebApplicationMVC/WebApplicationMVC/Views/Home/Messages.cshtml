@@ -1,0 +1,63 @@
+﻿
+@model List<WebApplicationMVC.Models.Dialog>
+@{
+    ViewBag.Title = "Messages";
+
+
+}
+@Styles.Render("~/bundles/messenger")
+<div class="row">
+    <div class="col-md-3" style="overflow:scroll;height:480px;overflow-x:hidden">
+        <div style="display:flex;flex-direction:row">
+            <button id="MessUser"><i class="fas fa-plus" style="color:green"></i> <i class="fas fa-user"></i></button>
+            <button id="MessGroup"><i class="fas fa-plus" style="color:green"></i> <i class="fas fa-users"></i></button>
+            <button onclick="JavaScript: window.location.reload();"><i class="fas fa-sync-alt"></i></button>
+        </div>
+        <div id="ListUsers" style="display:none">
+            <div id="List">
+
+            </div>
+        </div>
+
+        <input type="hidden" value="@ViewBag.Id" id="UserId" />
+        <div id="DialogList">
+            @for (int i = 0; i < Model.Count; i++)
+            {
+                <input type="hidden" class="dialogId" value="@Model[i].Id" />
+                <div class="Dialog">
+                    <span class="dName"> @Model[i].Name</span>
+                    <span class="delDialog">
+                        <i class="fas fa-times close"></i>
+                    </span>
+                    <div class="lastMess" @if(ViewBag.Unread[i].Count!=0) {@:style='border:2px solid orange'
+                         }>
+                        @if (ViewBag.Messages[i] != null)
+                        {
+                            @ViewBag.Messages[i].Content
+                            if (ViewBag.Unread[i].Count!=0) {
+                            <span class="countMessages">@ViewBag.Unread[i].Count</span>
+                            }
+                        }
+                        else
+                        {
+                            @:Пусто
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="col-md-6 RightChat">
+        <div style="text-align:center"> <span class="edit" style="display:none;cursor:pointer"><i class="fas fa-edit"></i></span>  <div id="DialogName"></div> </div>
+        <input type="hidden" Id="DialogUserId" />
+        <input type="hidden" Id="CurrentId" />
+        <div class="ChatBody"></div>
+        <div id="SendMessage" style="display:flex;flex-direction:row;">
+            <textarea cols="40" rows="2" id="messageContent" style="width:100%"></textarea>
+            <button id="Send" style="background-color:white"><i class="fas fa-paper-plane"></i> Відправити</button>
+        </div>
+    </div>
+</div>
+
+
+

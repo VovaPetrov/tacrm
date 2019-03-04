@@ -1,0 +1,84 @@
+﻿@model PagedList.IPagedList<WebApplicationMVC.Models.Contact>
+@using PagedList.Mvc;
+@{
+    ViewBag.Title = "Contacts";
+}
+@Styles.Render("~/bundles/contacts")
+
+<form action="/Home/SearchContact" method="post">
+    <div class="row">
+        <div class="col-md-3">
+            <input type="search" name="query" class="form-control" placeholder="Пошук контакту"/>
+        </div>
+        <div class="col-md-1">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+        </div>
+    </div>
+</form>
+<div id="dialog" style="display:none;">
+    <form method="post" action="/Home/EditContact" id="addNewContact" class="editContact">
+        <input type="hidden" id="Id" name="Id" />
+        <input type="text" name="LastName" class="form-control" placeholder="Фамилия">
+        <input type="text" name="FirstName" class="form-control" placeholder="Имя">
+        <input type="text" name="MiddleName" class="form-control" placeholder="Отчество">
+        <input type="tel" name="Tel" class="form-control" placeholder="Телефон" id="">
+        <input type="email" name="Email" id="" class="form-control" placeholder="Email">
+        <input type="text" name="Company" class="form-control" placeholder="Компания" id="">
+        <input type="text" name="Position" class="form-control" placeholder="Должность">
+        <input type="text" name="Comments" class="form-control" placeholder="Коментарі">
+        <button id="edit" class="btn btn-primary" type="submit">Змінити</button> <button id="del"  class="btn btn-danger" type="button">Видалити</button>
+    </form>
+</div>
+
+<div class="container-fluid contacts">
+    @foreach (var contact in Model)
+    {
+    <div class="row contact">
+        <input type="hidden" value="@contact.Id" />
+        <div class="col-md-2 name"><span class="last">@contact.LastName</span> <span class="first">@contact.FirstName</span> <span class="middle">@contact.MiddleName</span> </div>
+        <div class="col-md-2 company">@contact.Company</div>
+        <div class="col-md-1 position">@contact.Position</div>
+        <div class="col-md-3 email">@contact.Email</div>
+        <div class="col-md-2 tel">@contact.Tel</div>
+        <div class="col-md-2 comments">@contact.Comments</div>
+    </div>
+    }
+
+    @Html.PagedListPager(Model, page => Url.Action("Contacts", new { page }))
+    <br>
+    <form method="post" action="/Home/Contacts" id="addNewContact">
+        <fieldset>
+            <legend>Додати контакт</legend>
+            <div class="row">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="LastName" placeholder="Прізвище">
+                </div>
+                <div class="col-md-4">
+                    <input type="text" name="FirstName" class="form-control" placeholder="Ім'я">
+                </div>
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="MiddleName" placeholder="Побатькові">
+                </div>
+                <div class="col-md-4">
+                    <input type="tel" name="Tel" class="form-control" placeholder="Телефон">
+                </div>
+                <div class="col-md-4">
+                    <input type="email" class="form-control" name="Email" placeholder="Ел. пошта">
+                </div>
+                <div class="col-md-4">
+                    <input type="text" name="Company" class="form-control" placeholder="Компанія">
+                </div>
+                <div class="col-md-4">
+                    <input type="text" name="Position" class="form-control" placeholder="Посада">
+                </div>
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="Comments" placeholder="Коментарі">
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-success"><i class="fas fa-plus"></i> Додати</button>
+                </div>
+            </div>
+        </fieldset> 
+</form>
+</div>
+

@@ -1,0 +1,122 @@
+﻿@using Microsoft.AspNet.Identity;
+@using WebApplicationMVC.Models
+@{
+
+}
+
+    <div class="row">
+        <div class="col-md-6">
+            <h6>Пошук замовлень</h6>
+            <form method="get" action="/Order/Search">
+                <div class="row">
+
+
+                    <div class="col-md-10"><input type="search" class="form-control" name="Value" placeholder="Пошук по атрибутах" /></div>
+                    <div class="col-md-2"><button class="btn btn-primary" type="submit">Найти</button></div>
+
+                </div>
+            </form>
+        </div>
+        <div class="col-md-6">
+            <form method="get" action="/Order/GetReports">
+                <h6>Вибір дати для звіту по замовленнях</h6>
+                <div class="row">
+                    <div class="col-md-4">
+                        <input type="text" name="date1" placeholder="Початок" class="form-control datepickerFrom" autocomplete="off" required />
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" placeholder="Кінець" name="date2" class="form-control datepickerTo " autocomplete="off" required />
+                    </div>
+                    <div class="col-md-2"><button class="btn btn-primary" type="submit">Отримати</button></div>
+                </div>
+            </form>
+        </div>
+</div>
+
+
+<hr />
+<div class="orders">
+    <table id="orderTable">
+
+        <tr>
+            <th>Номер</th>
+            <th>Клієнт</th>
+            <th>Дата реєстрації</th>
+            <th>Назва папки</th>
+            <th>Мета оцінки</th>
+            <th>Статус роботи</th>
+            <th>Джерело замовлення</th>
+            <th>Наявність оплати</th>
+        </tr>
+
+        @foreach (var order in Model)
+        {
+            var color = "colorId" + order.StatusId;
+            var db = new ApplicationDbContext();
+            int ClientId = order.ClientId;
+            var ClientName = db.Clients.Where(e => e.Id == ClientId).FirstOrDefault();
+            string FullName = "";
+            if (ClientName != null)
+            {
+                FullName = ClientName.FullName;
+            }
+
+            string MetaContent = "";
+            if (order.MetaId != null)
+            {
+                int MetaId = order.MetaId;
+                MetaContent = db.Metas.Where(e => e.Id == MetaId).FirstOrDefault()?.Content;
+            }
+            int StatusId = order.StatusId;
+            var Status = db.Statuses.Where(e => e.Id == StatusId).FirstOrDefault();
+            int? SourceId = order.SourceId;
+            var Source = db.Sources.Where(e => e.Id == SourceId).FirstOrDefault();
+            string IsPaidTxt = "";
+            if (order.IsPaid == true)
+            {
+                IsPaidTxt = "Оплачено";
+            }
+            else
+            {
+                IsPaidTxt = "Не оплачено";
+            }
+
+            <tr class="@color Order">
+                <td class="OrderId" style="display:none">@order.Id</td>
+                <td>@order.Name</td>
+                <td>
+                    @FullName
+                </td>
+                <td>
+                    @order.CreatedDate
+                </td>
+                <td>Замовлення: @order.Name</td>
+                <td>
+                    @MetaContent
+                </td>
+                <td>
+                    @Status.Content
+                </td>
+                <td>
+                    @{ if (Source != null)
+                        {
+                            @Source.SourceName
+                        }
+                    }
+                </td>
+                <td>
+                    @IsPaidTxt
+                </td>
+            </tr>
+
+        }
+
+    </table>
+</div>
+@section Orders{
+
+    <link href="~/Content/Orders.css" rel="stylesheet" />
+    <script src="~/Scripts/Orders.js"></script>
+
+}
+

@@ -1,0 +1,34 @@
+.fa-times{
+    color:red;
+}
+.task{
+    margin-top:9px;
+  padding:8px;
+}
+.notready{
+    background-color:yellow;
+}
+.timenull{
+    background-color: salmon;
+  
+}
+.ready{
+    background-color: chartreuse;
+}
+#save{
+    margin-top:10px;
+}
+input[name='Element']{
+    margin-top:6px;
+}
+.addNewElement{
+    margin-top:6px;
+}
+.delete, .editTask {
+    cursor: pointer;
+}
+.unCompleted{
+    margin-left:10px;
+    color:red;
+    font-weight:700;
+}

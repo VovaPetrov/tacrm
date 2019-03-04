@@ -1,0 +1,19 @@
+.contact{
+    margin-top:12px;
+    border-bottom: 1px solid gray;
+    padding: 8px;
+}
+.pages>a{
+    margin:8px;
+}
+input,button {
+    margin:6px;  
+}
+.editContact input{
+    margin:3px;
+}
+.contact:hover {
+    color: white;
+    background-color: #428bca;
+    cursor: pointer;
+}

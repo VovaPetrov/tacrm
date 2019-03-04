@@ -1,0 +1,140 @@
+﻿body {
+}
+.menu {
+    position: sticky;
+    top:120px;
+    float:right;
+    z-index:100;
+    border-radius:10px;
+}
+.addObject{
+    border:1px solid gray;
+    padding-top:10px;
+    padding-bottom:10px;
+    margin:1px;
+    border-radius:6px;
+    margin-bottom:4px;
+}
+.delObj, .delPrice {
+    cursor: pointer;
+    color: red;
+}
+.priceBox {
+    border: 1px solid gray;
+    padding:8px;
+    border-radius:3px;
+}
+.deleteFile{
+    color:red;
+    cursor:pointer;
+    text-align:right;
+}
+#partsPrice {
+    overflow: scroll;
+    border-collapse: separate;
+    border-spacing: 10px 5px;
+    background-color: whitesmoke;
+    color:black!important;
+}
+.appointment, .partPrice {
+    color: black !important;
+}
+.loader {
+    border: 16px solid #f3f3f3;
+    border-radius: 50%;
+    border-top: 16px solid #3498db;
+    width: 120px;
+    height: 120px;
+    -webkit-animation: spin 2s linear infinite; /* Safari */
+    animation: spin 2s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+  0% { -webkit-transform: rotate(0deg); }
+  100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+#searchBox {
+    padding: 3px;
+    padding-left: 8px;
+    width: 250px;
+}
+
+    #searchBox + button[type="submit"] {
+        font-size: 1.2em;
+        border: none;
+    }
+
+#add {
+    color: green;
+    font-size: 1.3em;
+    vertical-align: middle;
+}
+
+.addOrder {
+    vertical-align: middle;
+    padding: 4px;
+    border: 1px solid gray;
+    border-radius: 3px;
+}
+
+.orders {
+    overflow: scroll;
+}
+
+tr {
+    cursor: pointer;
+}
+
+.orders > table {
+    border-collapse: separate;
+    border-spacing: 0px 5px;
+    text-align: left;
+}
+
+
+td {
+    width: 120px;
+    color: white;
+    padding: 3px;
+}
+
+.colorId1, .colorId2, .colorId3 {
+    background-color: #99A3A4;
+}
+
+.colorId4, .colorId5, .colorId6, .colorId7 {
+    background-color: #CCCC00;
+}
+
+.colorId8 {
+    background-color: #90EE90;
+}
+.colorId9 {
+    background-color: #566573;
+}
+.colorId10 {
+    background-color: #FF6347;
+}
+.Order:hover{
+    transform:translateX(8px);
+    
+}
+.files{
+    padding:10px;
+    margin:5px;
+}
+.file{
+    background-color:lightgrey;
+    margin-top:3px;
+    text-decoration:underline;
+  
+}
+.file a {
+        color: blue;
+}

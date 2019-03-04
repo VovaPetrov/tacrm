@@ -1,0 +1,155 @@
+﻿@using WebApplicationMVC.Models;
+@{
+    ViewBag.Title = "Конфігурація даних";
+    var db = new ApplicationDbContext();
+}
+<div id="DeskObj" style="display:none">
+    <span id="ObjName"></span>
+    <input type="hidden" id="ObjId"/>
+    <hr />
+    <table class="ObjMeta">
+
+    </table>
+    <hr />
+    <span style="font-size:0.9em">Додати атрибут</span>
+    <div><input type="text" placeholder="Назва атрибуту" name="NewAtrr" /><button type="button" id="AddAtrr" >Додати</button></div>
+    <hr />
+    <button class="btn btn-primary" type="button" id="saveDesk">Зберегти</button>
+</div>
+
+<div id="accordConfig">
+    <h3>Об'єкти оцінки</h3>
+    <div>
+        <div class="Objects">
+            @foreach (var obj in ViewBag.Objects)
+            {
+                <div class="container">
+                    <div class="row Obj" data-id="@obj.Id">
+                        <div class="ObjName col-md-10">@obj.Name</div>
+                        <div class="col-md-2 DelObj">
+                            <i class="fas fa-times"></i>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="row" style="margin-top:6px;">
+
+            <div class="col-md-8">
+                <input type="text" class="form-control ObjectName" />
+            </div>
+            <div class="col-md-2">
+                <button type="button" class="btn btn-primary" id="AddObject">Новий об'єкт</button>
+            </div>
+        </div>
+    </div>
+    <h3>Мета оцінки</h3>
+    <div>
+        <div class="MetasArr container">
+            @foreach (var meta in ViewBag.Metas)
+            {
+                <div class="Meta row" data-id="@meta.Id">
+                    <div class="col-md-10">@meta.Content</div>
+                    <div class="col-md-2 DelMeta">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="row" style="margin-top:6px;">
+            <div class="col-md-8">
+                <input type="text" placeholder="Мета оцінки" class="form-control MetaName" />
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary" type="button" id="AddMeta">Додати</button>
+            </div>
+        </div>
+    </div>
+    <h3>Реквізити</h3>
+    <div>
+        <div class="PropsArr container">
+            @foreach (var props in ViewBag.Props)
+            {
+                <div class="Props row" data-id="@props.Id">
+                    <div class="col-md-10">@props.Content</div>
+                    <div class="col-md-2 DelProp">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="row" style="margin-top:6px;">
+            <div class="col-md-8">
+                <input type="text" placeholder="Текст реквізиту" class="form-control PropName" />
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary" type="button" id="AddProp">Додати</button>
+            </div>
+        </div>
+    </div>
+    <h3>Джерела замовлень</h3>
+    <div>
+        <div class="container SourceArr">
+            @foreach (var source in ViewBag.Source)
+            {
+                <div class="Source row" data-id="@source.Id">
+                    <div class="col-md-10">@source.SourceName</div>
+                    <div class="col-md-2 DelSource">
+                        <i class="fas fa-times"></i>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="row" style="margin-top:6px;">
+            <div class="col-md-8">
+                <input type="text" placeholder="Джерело замовлення" class="form-control SourceName" />
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary" type="button" id="AddSource">Додати</button>
+            </div>
+        </div>
+    </div>
+    <h3>Філії джерел</h3>
+    <div>
+        <div class="container BranchArr">
+            @foreach (var branch in ViewBag.Branches)
+            {
+                <div class="Branch row" data-id="@branch.Id">
+                    <div class="col-md-5">
+                        @{
+                            int SId = branch.SourceId;
+                            string SourceName = db.Sources.Where(e => e.Id == SId).FirstOrDefault().SourceName;
+                            @SourceName
+                    }
+                </div>
+                <div class="col-md-5">@branch.BranchName</div>
+                <div class="col-md-2 DelBranch">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+        }
+        </div>
+        <div class="row" style="margin-top:6px;">
+            <div class="col-md-4">
+                <select class="form-control" id="SourceId">
+                    @foreach (var source in ViewBag.Source)
+                    {
+                        <option value="@source.Id">@source.SourceName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <input type="text" placeholder="Філіал" class="form-control BranchName" />
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary" type="button" id="AddBranch">Додати</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Config{
+        <link rel="stylesheet" href="~/Content/config.css" />
+        <script src="~/Content/config.js"></script>
+}

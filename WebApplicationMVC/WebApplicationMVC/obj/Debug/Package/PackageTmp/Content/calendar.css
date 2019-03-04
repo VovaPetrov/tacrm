@@ -1,0 +1,20 @@
+﻿#calendar{
+    max-width:720px;
+    overflow:hidden;
+}
+#calendar .fc-today{
+    background-color:silver;
+}
+#calendar .fc-content{
+transition:all .3s;
+cursor:pointer;
+}
+#calendar .fc-content:hover {
+        background-color: lightgray;
+}
+.color {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    background-color: #A4BDFC;
+}

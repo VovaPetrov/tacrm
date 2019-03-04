@@ -1,0 +1,14 @@
+﻿
+.user
+{
+    border:1px solid gray;
+    padding:6px;
+    margin-top:3px;
+    border-radius:4px;
+    cursor:pointer;
+    transition:all 0.3s;
+}
+.user:hover{
+    background-color:lightslategray;
+    color:white;
+}

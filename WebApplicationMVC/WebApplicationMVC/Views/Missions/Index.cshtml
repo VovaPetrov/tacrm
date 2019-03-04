@@ -1,0 +1,91 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+@Styles.Render("~/bundles/tasks")
+
+<div class="container">
+    <button id="addNewTask" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Завдання</button>
+    <a href="/Missions/IndexUnCompleted" class="unCompleted">Невиконанні завдання</a>
+    <hr />
+    <div class="TaskDialog" style="display:none">
+        <form method="post" action="/Missions/Create">
+            <h4>Нове завдання</h4>
+            @if(ViewBag.IsUserAdmin)
+            {
+                <div class="userList">
+                    <select name="UserId">
+                        @foreach(var i in ViewBag.Users)
+                        {
+                            <option value="@i.Id">@i.LastName @i.FirstName @i.MiddleName</option>
+                        }
+                    </select>
+                </div>
+            }
+            <div class="TaskList">
+                <div class="TaskElement">
+                    <input type="text" name="Element" required /> <i class='fas fa-times' style='color:red'></i>
+                </div>
+            </div>
+            <button class="addNewElement"><i class="fas fa-plus-square"></i> Пункт</button>
+            <br />
+            Дата завдання
+            <br> <input type="date" name="date" required id="">
+            <br>
+            Час завдання
+            <br>
+            <input type="time" name="time" id="">
+            <br>
+
+            <button type="submit"  id="save">
+                <i class="fas fa-save"></i>
+                Зберегти
+            </button>
+        </form>
+    </div>
+    <div class="TaskDialogEdit" style="display:none">
+        <form method="post" action="/Missions/Edit">
+            <h4>Змінити завдання</h4>
+            <input type="hidden" class="EditTaskId" name="TaskId" />
+            <div class="TaskList">
+                <div class="TaskElement">
+                  
+                </div>
+            </div>
+            <button class="addNewElementEdit" type="button" style="margin-top:5px;"><i class="fas fa-plus-square"></i> Пункт</button>
+            <br />
+            Дата завдання
+            <br> <input type="date" name="date" required id="editDate">
+            <br>
+            Час завдання
+            <br>
+            <input type="time" name="time" id="editTime">
+            <br>
+
+            <button type="submit"  style="margin-top:5px;" id="editTask">
+                <i class="fas fa-save"></i>
+                Зберегти
+            </button>
+        </form>
+    </div>
+    @for (var i = 0; i < Model.Count; i++)
+    {
+        <div class="row task @ViewBag.Colors[i]">
+            <input type="hidden" class="TaskId" value="@Model[i].Id" />
+            <div class="col-md-2">@ViewBag.Preview[i]</div>
+            <div class="col-md-1 date"> @Model[i].DateTime.ToShortDateString() </div>
+            <div class="col-md-1 time"> @if (Model[i].DateTime.ToShortTimeString() != "0:00")
+            {@Model[i].DateTime.ToShortTimeString()} </div>
+            <div class="col-md-2">
+                Залишилось @ViewBag.LostDays[i]
+            </div>
+            <div class="col-md-4">@ViewBag.ListUsers[i]</div>
+            <div class="col-md-1 editTask"><i class="fas fa-edit"></i></div>
+            <div class="col-md-1 delete"><i class="fas fa-times"></i></div>
+        </div>
+                }
+    <hr>
+
+</div>
+@Scripts.Render("~/bundles/jquery")
+@Scripts.Render("~/bundles/mission")

@@ -1,0 +1,148 @@
+﻿@using Microsoft.AspNet.Identity
+@using WebApplicationMVC.Models
+@{
+    var userId = User.Identity.GetUserId();
+    WebApplicationMVC.Models.ApplicationUser user =null;
+    if (userId != null)
+    {
+       user = new ApplicationDbContext().Users.Where(e => e.Id == userId).FirstOrDefault();
+    }
+}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>TA-expert-service</title>
+
+    <!-- Bootstrap CSS CDN -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4" crossorigin="anonymous">
+    <!-- Our Custom CSS -->
+    <link rel="stylesheet" href="../../Content/main.css">
+    <link rel="stylesheet" href="../../Content/PagedList.css">
+    <script src="~/Scripts/jquery-3.3.1.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <!-- Font Awesome JS -->
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+
+    <div class="wrapper">
+        <!-- Sidebar Holder -->
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <img src="../../Content/images/ta.png" id="sidebar_icon" alt="">
+            </div>
+            <img src="../../Content/images/user.png" id="usericon" alt="">
+
+            <ul class="list-unstyled components">
+
+                <p>
+                    @if (user != null)
+                    {@String.Format(user.FirstName + " " + user.LastName)}
+                </p>
+                <li>
+                    <a href="/Home/Index"><i class="fas fa-home"></i> Головна</a>
+                </li>
+
+                <li>
+                    <a href="/Order/Add"> <i class="fas fa-plus"></i> Нове замовлення</a>
+                </li>
+                <li>
+                    <a href="/Order/Index"><i class="fas fa-handshake"></i> Замовлення</a>
+                </li>
+                <li>
+                    <a href="/Calendar/Index"><i class="fas fa-calendar-alt"></i> Календар</a>
+                </li>
+                <li>
+                    <a href="/Home/Messages"><i class="fas fa-envelope"></i> Повідомлення <span class="countUnreadMessages"></span> </a>
+                </li>
+                <li>
+                    <a href="/Missions/Index"><i class="fas fa-tasks"></i> Завдання</a>
+                </li>
+                @{
+
+                    var db = new ApplicationDbContext();
+                    if (!String.IsNullOrEmpty(userId))
+                    {
+                        var role = db.Users.Where(e => e.Id == userId).FirstOrDefault().Roles.First().RoleId;
+                        if (role == "1")
+                        {
+                            <li>
+                                <a href="/Employees/Index"><i class="fas fa-users"></i> Менеджери</a>
+                            </li>
+                            <li>
+                                <a href="/Analytics/Index"><i class="fas fa-chart-bar"></i> Аналітика</a>
+                            </li>
+                            <li>
+                                <a href="/Config/Index"><i class="fas fa-cogs"></i> Конфігурація</a>
+                            </li>
+                        }
+                    }
+                }
+
+                <li>
+                    <a href="/Home/Contacts"><i class="fas fa-address-book"></i> Контакти</a>
+                </li>
+                <li>
+                    @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+                    {
+                        @Html.AntiForgeryToken()
+                    }
+                    <a href="javascript:document.getElementById('logoutForm').submit()"><i class="fas fa-sign-out-alt"></i> Вийти</a>
+                </li>
+                <li>
+                    <a style="font-size:0.8em" href="/Manage/ChangePassword">Змінити пароль</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Page Content Holder -->
+        <div id="content">
+
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <div class="container-fluid">
+
+                    <button type="button" id="sidebarCollapse" class="navbar-btn">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                    <h4>@ViewBag.Page</h4>
+                </div>
+            </nav>
+            @RenderBody()
+        </div>
+    </div>
+
+
+   
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+    <!-- Bootstrap JS -->
+
+    <script src="~/Scripts/jquery-ui.js"></script>
+    <script src="~/Scripts/main.js"></script>
+    <link href="~/Scripts/jquery-ui.css" rel="stylesheet" />
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#sidebarCollapse').on('click', function () {
+                $('#sidebar').toggleClass('active');
+                $(this).toggleClass('active');
+            });
+
+        });
+    </script>
+    @RenderSection("calendar", required: false)
+    @RenderSection("Orders", required: false)
+    @RenderSection("Users", required: false)
+    @RenderSection("Config", required: false)
+    @RenderSection("Analytics", required: false)
+</body>
+
+</html>

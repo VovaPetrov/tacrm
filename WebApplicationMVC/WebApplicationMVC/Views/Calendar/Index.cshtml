@@ -1,0 +1,144 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+@Styles.Render("~/bundles/calendarCss")
+@Styles.Render("~/Content/calendar.css")
+
+<div id="calendar"></div>
+<br />
+<div id="newEventForm" style="display:none">
+    <form action="/Calendar/CreateEvent">
+        <h5>Нова подія </h5>
+        <div class="form-group">
+            <textarea class="form-control" placeholder="Заголовок" name="Summary"></textarea>
+        </div>
+        <div>
+
+            <div class="form-row" style="padding-bottom:3px">
+                <div class="col-2">
+                    <div class="color"></div>
+                </div>
+                <div class="col">
+                    <select class="form-control ColorId" name="ColorId">
+                        <option value="1" style="background-color:#A4BDFC">Lavender</option>
+                        <option value="7" style="background-color:#46D6DB">Peacock</option>
+                        <option value="9" style="background-color:#5484ED">Blueberry</option>
+                        <option value="2" style="background-color:#7AE7BF">Sage</option>
+                        <option value="3" style="background-color:#DBADFF">Grape</option>
+                        <option value="4" style="background-color:#FF887C">Tangerine</option>
+                        <option value="5" style="background-color:#FBD75B">Banana</option>
+                        <option value="6" style="background-color:#FFB878">Flamingo</option>
+                        <option value="8" style="background-color:#E1E1E1">Graphite</option>
+                        <option value="10" style="background-color:#51B749">Basil</option>
+                        <option value="11" style="background-color:#DC2127">Tomato</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <input type="text" class="form-control" placeholder="Місце" name="Location">
+        </div>
+        <h6>Початок: </h6>
+        <div class="form-group">
+            <div class="form-row">
+                <div class="col">
+                    <input type="date" required name="startDate" class="form-control">
+                </div>
+                <div class="col">
+                    <input type="time" required name="startTime" class="form-control">
+                </div>
+            </div>
+        </div>
+        <h6>Кінець: </h6>
+        <div class="form-group">
+            <div class="form-row">
+                <div class="col">
+                    <input type="date" name="endDate" class="form-control">
+                </div>
+                <div class="col">
+                    <input type="time" name="endTime" class="form-control">
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-success" id="newEventBtn">Створити</button>
+    </form>
+</div>
+<!--
+    
+
+
+-->
+
+<div id="editEventForm" style="display:none">
+    <form action="/Calendar/EditEvent">
+        <input type="hidden" name="EventId"/>
+        <h5>Редагувати подію </h5>
+        <div class="form-group" >
+            <textarea class="form-control" id="editDesc" placeholder="Заголовок" name="Summary"></textarea>
+        </div>
+        <div>
+
+            <div class="form-row" style="padding-bottom:3px">
+                <div class="col-2">
+                    <div class="color"></div>
+                </div>
+                <div class="col">
+                    <select class="form-control ColorId" id="editColorId" name="ColorId">
+                        <option value="1" style="background-color:#A4BDFC">Lavender</option>
+                        <option value="7" style="background-color:#46D6DB">Peacock</option>
+                        <option value="9" style="background-color:#5484ED">Blueberry</option>
+                        <option value="2" style="background-color:#7AE7BF">Sage</option>
+                        <option value="3" style="background-color:#DBADFF">Grape</option>
+                        <option value="4" style="background-color:#FF887C">Tangerine</option>
+                        <option value="5" style="background-color:#FBD75B">Banana</option>
+                        <option value="6" style="background-color:#FFB878">Flamingo</option>
+                        <option value="8" style="background-color:#E1E1E1">Graphite</option>
+                        <option value="10" style="background-color:#51B749">Basil</option>
+                        <option value="11" style="background-color:#DC2127">Tomato</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <input type="text" class="form-control" placeholder="Місце" id="editLocation" name="Location">
+        </div>
+        <h6>Початок: </h6>
+        <div class="form-group">
+            <div class="form-row">
+                <div class="col">
+                    <input type="date" required name="startDate" id="editStartDate" class="form-control">
+                </div>
+                <div class="col">
+                    <input type="time" required name="startTime" id="editStartTime" class="form-control">
+                </div>
+            </div>
+        </div>
+        <h6>Кінець: </h6>
+        <div class="form-group">
+            <div class="form-row">
+                <div class="col">
+                    <input type="date" name="endDate" id="editEndDate" class="form-control">
+                </div>
+                <div class="col">
+                    <input type="time" name="endTime" id="editEndTime" class="form-control">
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-success" id="editEventBtn">Редагувати</button>
+        <button type="submit" class="btn btn-danger" id="deleteEventBtn">Видалити</button>
+    </form>
+</div>
+
+        @section calendar{
+
+            @Scripts.Render("~/bundles/moment")
+            @Scripts.Render("~/bundles/calendarJs")
+            @Scripts.Render("~/bundles/calendar")
+            <script src="~/Content/FullCalendar/locale/uk.js"></script>
+        }
+
+
+
+
+

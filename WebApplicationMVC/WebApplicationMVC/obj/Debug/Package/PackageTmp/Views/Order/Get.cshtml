@@ -1,0 +1,531 @@
+﻿@using WebApplicationMVC.Models
+@using Microsoft.AspNet.Identity
+@model WebApplicationMVC.Models.Order
+@{
+    ViewBag.Title = "Add";
+    var Id = User.Identity.GetUserId();
+    var db = new ApplicationDbContext();
+    var users = db.Users.ToList();
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+            <h3>Договір №@Model.Name</h3>
+        </div>
+        <div class="col-md-2">
+            <form method="get" action="/Order/GetAccount">
+                <input type="hidden" name="OrderId" value="@ViewBag.Id" />
+                <button class="btn btn-primary" type="submit" id="getAccount"><i class="fas fa-print"></i> Рахунок</button>
+            </form>
+        </div>
+        <div class="col-md-2">
+            <form method="get" action="/Order/GetContract">
+                <input type="hidden" name="orderId" value="@ViewBag.Id" />
+                <button class="btn btn-primary" type="submit" id="getContract"><i class="fas fa-print"></i> Договір</button>
+            </form>
+        </div>
+        <div class="col-md-2">
+            <form method="get" action="/Order/GetAct">
+                <input type="hidden" name="orderId" value="@ViewBag.Id" />
+                <button class="btn btn-primary" type="submit" id="getAct"><i class="fas fa-print"></i> Акт</button>
+            </form>
+        </div>
+        <div class="col-md-1">
+            <form method="post" action="/Order/DelOrder">
+                <input type="hidden" name="OrderId" value="@ViewBag.Id" />
+                <button class="btn btn-danger" type="submit" id="delOrder"><i class="fas fa-times"></i> Видалити</button>
+            </form>
+        </div>
+    </div>
+    <div class="menu">
+        <div class="form-group" style="margin-top:20px">
+            <button id="saveOrder" type="button" class="btn btn-success"><i class="fas fa-save"></i> Зберегти</button>
+        </div>
+        <div class="form-group">
+            <a class="btn btn-primary" style="padding:8px" href="#upload">Завантажити</a>
+        </div>
+    </div>
+    <hr />
+    <form id="EditOrder">
+        <div class="container">
+            <div class="row">
+                <div class="form-group col-md-5">
+                    <label for="metaSelect">Мета оцінки</label>
+                    <select class="form-control" id="metaSelect" name="MetaId">
+                   <option>Не вибрано</option>
+                        @foreach (var meta in ViewBag.Meta)
+                        {
+
+                            <option value="@meta.Id"
+                                    @if (meta.Id == ViewBag.MetaId) { @: selected="selected"
+                                    }>
+                                @meta.Content
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="statusSelect">Статус роботи</label>
+                    <select class="form-control" id="statusSelect" name="StatusId">
+                        @foreach (var status in ViewBag.Status)
+                        {
+                            <option value="@status.Id" @if (status.Id == ViewBag.StatusId) { @: selected="selected"
+                                    }>
+                                @status.Content
+                            </option>
+                        }
+                    </select>
+                </div>
+
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="form-group col-md-5">
+                    <label for="sourceSelect">Джерело замовлення</label>
+                    <select class="form-control" id="sourceSelect" name="SourceId">
+                        @foreach (var source in ViewBag.Source)
+                        {
+                            <option value="@source.Id" @if (ViewBag.SourceId != null) { if (source.Id == ViewBag.SourceId) { @: selected="selected"
+                                    } }>
+                                @source.SourceName
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group col-md-4">
+                    <label for="branchSelect">Філія</label>
+                    <select class="form-control" id="branchSelect" name="BranchId">
+                        <option @if (ViewBag.BranchId == null) { @:selected="selected"
+                                }>Не вибрано</option>
+                        @foreach (var branch in ViewBag.Branches)
+                        {
+                            <option value="@branch.Id" @if (ViewBag.BranchId != null) { if (branch.Id == ViewBag.BranchId) { @: selected="selected"
+                                    } }>
+                                @branch.BranchName
+                            </option>
+                        }
+                    </select>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="container">
+            <h5>Виконавці</h5>
+            <div class="form-group col-md-4">
+                @foreach (var user in users)
+                {
+                    string fullName = $"{user.LastName}  {user.FirstName} {user.MiddleName}";
+
+                    <input type="checkbox" value="@user.Id" name="UserId" @if (ViewBag.Users.Contains(user.Id)) { @: checked
+                           } /> @fullName <br />
+
+                    }
+            </div>
+        </div>
+        <div class="container">
+
+            <h5>Замовник</h5>
+            <div class="row">
+                <div class="form-group col-md-4">
+                    <input type="text" class="form-control" name="ClientName" value="@ViewBag.Client.FullName" required placeholder="Назва/ПІБ" />
+                </div>
+                <div class="form-group col-md-4">
+                    <input type="text" class="form-control" name="IPN" value="@ViewBag.Client.IPN_EDRPOY" placeholder="ЄДРПОУ/ІНН" />
+                </div>
+                <div class="form-group col-md-4">
+                    <input type="tel" class="form-control" name="Tel" value="@ViewBag.Client.Phone" required placeholder="Kонтактний номер телефону" />
+                </div>
+                <div class="form-group col-md-4">
+                    <input type="email" class="form-control" name="Email" value="@ViewBag.Client.Email" placeholder="Eлектронна пошта " />
+                </div>
+                <div class="form-group col-md-8">
+                    <input type="text" class="form-control" name="Reck" value="@ViewBag.Client.Props" placeholder="Pеквізити замовника" />
+
+                </div>
+            </div>
+        </div>
+        <div class="container">
+
+            <h5>Власник</h5>
+            <div class="row">
+                <div class="form-group col-md-4">
+                    <input type="text" class="form-control" name="OwnerName" value="@ViewBag.Owner.FullName" placeholder="Назва/ПІБ" />
+                </div>
+                <div class="form-group col-md-4">
+                    <input type="text" class="form-control" name="OwnerIPN" value="@ViewBag.Owner.IPN_EDRPOY" placeholder="ЄДРПОУ/ІПН" />
+                </div>
+                <div class="form-group col-md-4">
+                    <input type="tel" class="form-control" name="OwnerTel" value="@ViewBag.Owner.Phone" placeholder="Kонтактний номер телефону" />
+                </div>
+                <div class="form-group col-md-4">
+                    <input type="email" class="form-control" name="OwnerEmail" value="@ViewBag.Owner.Email" placeholder="Eлектронна пошта " />
+                </div>
+                <div class="form-group col-md-8">
+                    <input type="text" class="form-control" name="OwnerReck" value="@ViewBag.Owner.Props" placeholder="Pеквізити власника" />
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+
+            <h5>Об'єкти</h5>
+
+            <div class="ObjectList">
+                @foreach (var obj in ViewBag.objList)
+                {
+                    <div class="ObjMeta">
+                        <hr>
+                        <div class="row">
+                            @{
+                                int objId = obj.ObjectId;
+                                var ob = @db.Objects.Where(e => e.Id == objId).FirstOrDefault();
+                            }
+                            <div class='col-md-2'>   <h5>@ob.Name</h5>    </div>
+                            <div class='col-md-2'>
+                                <span class='delObj'> <i class='fas fa-times'></i></span>
+                            </div>
+                        </div>
+                        <div class='Object'>
+                            <input type='hidden' class="objId" value="@obj.ObjectId" />
+                            <div class="row objData">
+                                @{
+                                    var DataOfObject = db.ObjectDesces.Where(e => e.ObjectTypeId == objId).ToList();
+                                    foreach (var data in DataOfObject)
+                                    {
+                                        int deskId = data.Id;
+                                        int objListId = obj.Id;
+                                        var value = db.ObjectValues.Where(e => e.ObjectListId == objListId && e.ObjectDeskId == deskId).FirstOrDefault();
+                                        string Value;
+                                        if (value == null)
+                                        {
+                                            Value = "";
+                                        }
+                                        else
+                                        {
+                                            Value = value.Value;
+                                        }
+                                        <div class="form-group col-md-4">
+                                            <input type='text' class="objectDesc form-control" data-id='@data.Id' placeholder='@data.Name' value="@Value" />
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="row addObject">
+
+                <div class="form-group col-md-4">
+                    <select class="form-control" id="objectSelect" name="ObjectId">
+                        @foreach (var obj in ViewBag.Object)
+                        {
+                            <option value="@obj.Id">@obj.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group col-md-4">
+                    <button type="button" class="btn btn-primary" id="addObjectToOrder"><i class="fas fa-plus"></i> Об'єкт</button>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <h5>Дата надання документів</h5>
+            <div class="row">
+                <div class="col-md-4">
+                    @foreach (var date in ViewBag.DatesDocument)
+                    {
+                        <div class="form-group ">
+                            <input class="form-control" type="date" value="@date.DateOfDocument.ToString("yyyy-MM-dd")" readonly name="DateOfDocument" />
+                        </div>
+
+                    }
+                    <div class="form-group">
+                        <input class="form-control" type="date" name="DateOfDocument" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <h5>Огляд</h5>
+            <div class="row">
+                <div class="form-group col-md-3">
+                    <label>ПІБ хто проводив</label>
+                    <input type="text" class="form-control" name="Inspector" value="@ViewBag.Overwiever" />
+                </div>
+
+                <div class="form-group col-md-3">
+                    <label>Дата огляду</label>
+                    <input type="date" class="form-control" name="InspectionDate" value="@ViewBag.DateTimeOverWatch" />
+                </div>
+                <div class="form-group col-md-3">
+                    <label>Вартість огляду</label>
+                    <input type="number" class="form-control" name="InspectionPrice" value="@ViewBag.PriceOverWatch" />
+                </div>
+                @if (ViewBag.IsUserAdmin)
+                {
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>
+                                Наявність оплати
+                            </label>
+                            <br />
+                            @if (ViewBag.IsPaidOverWatch != null && (bool)ViewBag.IsPaidOverWatch == true)
+                            {
+
+                                @:<input type="radio" name="oplataOverwatch" value="true" checked="checked"> Так
+                                @:<input type="radio" name="oplataOverwatch" value="false">Ні
+                            }
+                            else
+                            {
+                                @:<input type="radio" name="oplataOverwatch" value="true"> Так
+                                @:<input type="radio" name="oplataOverwatch" value="false" checked="checked">Ні
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-md-3">           
+                        <div class="form-group">
+                            <label> Наявність оплати</label>
+                            @if (ViewBag.IsPaidOverWatch != null && (bool)ViewBag.IsPaidOverWatch == true)
+                            {
+                                @:<input type="radio" name="oplataOverwatch" disabled value="true" checked="checked"> Так
+                                @:<input type="radio" name="oplataOverwatch" disabled value="false">Ні
+                            }
+                            else
+                            {
+                                @:<input type="radio" name="oplataOverwatch" disabled value="true"> Так
+                                @:<input type="radio" name="oplataOverwatch" disabled value="false" checked="checked">Ні
+                            }
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </div>
+        <div class="container">
+            <h5>Верифікація</h5>
+            <div class="row">
+                <div class="col-md-4 form-group">
+                    <label>Дата прийняття на верифікацію</label>
+                    <input type="date" name="DateTakeVerification" value="@if(Model.DateOfTakeVerification.HasValue){@Model.DateOfTakeVerification.Value.ToString("yyyy-MM-dd")}" class="form-control" />
+                </div>
+                <div class="col-md-4 form-group">
+                    <label>Дата направлення на верифікацію</label>
+                    <input type="date" name="DateDirectVerification" value="@if(Model.DateOfDirectVerification.HasValue){@Model.DateOfDirectVerification.Value.ToString("yyyy-MM-dd")}" class="form-control" />
+                </div>
+                <div class="col-md-4 form-group">
+                    <label>Дата закінчення верифікації</label>
+                    <input type="date" name="DateEndVerification" value="@if(Model.DateOfEndVerification.HasValue){@Model.DateOfEndVerification.Value.ToString("yyyy-MM-dd")}" class="form-control" />
+                </div>
+                <div class="col-md-4 form-group">
+                    <label>Коментар</label>
+                    <input type="text" name="CommentsVerification" value="@Model.CommentVerification" class="form-control" />
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <h5>Передача Звіту Замовнику</h5>
+            <div class="row">
+                <div class="col-md-4 form-group">
+                    <label>Дата передачі Звіту Замовнику</label>
+                    <input type="date" name="DateOfTransfer" class="form-control" value="@if(Model.DateOfTransfer.HasValue){@Model.DateOfTransfer.Value.ToString("yyyy-MM-dd")}" />
+                </div>
+                <div class="col-md-4 form-group">
+                    <label>Коментар</label>
+                    <input type="text" name="CommentsOfTransfer" class="form-control" value="@Model.CommentOfTransfer" />
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <h5>Загальний коментар</h5>
+            <div class="form-group">
+                <textarea class="form-control" name="Comments">@ViewBag.Comments</textarea>
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>Термін виконання замовлення</h5>
+                    <div class="form-group">
+                        <input type="number" class="form-control" placeholder="К-сть робочих днів" name="CountDays" value="@ViewBag.CountDays" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                @if (ViewBag.IsUserAdmin)
+                {
+                    <div class="col-md-4">
+                        <h5>Оплата</h5>
+                        <div class="form-group">
+                            <label>
+                                Наявність оплати
+                            </label>
+                            <br />
+                            @if (ViewBag.IsPaid != null && (bool)ViewBag.IsPaid == true)
+                            {
+
+                                @:<input type="radio" name="oplata" value="true" checked="checked"> Так
+                                @:<input type="radio" name="oplata" value="false">Ні
+                            }
+                            else
+                            {
+                                @:<input type="radio" name="oplata" value="true"> Так
+                                @:<input type="radio" name="oplata" value="false" checked="checked">Ні
+                            }
+
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h5>Дата оплати</h5>
+                        <div class="form-group">
+                            <input type="date" class="form-control" name="DateOfPay" value="@if(Model.DateOfPay.HasValue){@Model.DateOfPay.Value.ToString("yyyy-MM-dd")}" />
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-md-4">
+                        <h5>Оплата</h5>
+                        <div class="form-group">
+                            <label>
+                                Наявність оплати
+                            </label>
+                            <br />
+                            @if (ViewBag.IsPaid != null && (bool)ViewBag.IsPaid == true)
+                            {
+
+                                @:<input type="radio" name="oplata" disabled value="true" checked="checked"> Так
+                                @:<input type="radio" name="oplata" disabled value="false">Ні
+                            }
+                            else
+                            {
+                                @:<input type="radio" name="oplata" disabled value="true"> Так
+                                @:<input type="radio" name="oplata" disabled value="false" checked="checked">Ні
+                            }
+
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h5>Дата оплати</h5>
+                        <div class="form-group">
+                            <input type="date" class="form-control" readonly name="DateOfPay" value="@if(Model.DateOfPay.HasValue){@Model.DateOfPay.Value.ToString("yyyy-MM-dd")}" />
+                        </div>
+                    </div>
+                }
+
+            </div>
+
+
+            <div class="form-group ">
+                <label>
+                    Реквізити рахунку
+                </label>
+                <select name="Props" class="form-control">
+                    @foreach (var props in ViewBag.Props)
+                    {
+                        <option value="@props.Id" @if (ViewBag.PropsId != null) { if (ViewBag.PropsId == props.Id) { @: selected="selected"
+                                } }>
+                            @props.Content
+                        </option>
+                    }
+                </select>
+            </div>
+            <hr />
+            <div class="row">
+                <div class="col-md-4">
+                    <table id="partsPrice">
+                        @foreach (var pay in ViewBag.Payments)
+                        {
+                            <tr>
+                                <td class='appointment'>@pay.Appointment</td>
+                                <td class="partPrice">@pay.Value</td>
+                                <td>  <span class='delPrice'> <i class='fas fa-times'></i></span></td>
+                            </tr>
+                        }
+                    </table>
+                    <div class="form-group">
+                        <label>Всього</label>
+                        <input type="number" class="form-control" name="TotalPrice" value="@ViewBag.Sum" />
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="priceBox">
+                        <div class="form-group">
+                            <label>Призначення</label>
+                            <input type="text" class="form-control" name="Appointment" />
+                        </div>
+                        <div class="form-group">
+                            <label>Вартість</label>
+                            <input type="number" class="form-control" name="ObjPrice" />
+                        </div>
+                        <button type="button" class="btn btn-success" id="addPrice">Додати</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <hr />
+    <div class="container">
+
+        <div class="row">
+            <div class="col-md-2"> <h5>Файли</h5></div>
+            <div class="col-md-2">
+                <form method="get" action="/Order/DownloadFolder" target="_blank">
+                    <input type="hidden" name="Order" value="@ViewBag.Id" />
+                    <button class="btn btn-success"><i class="fas fa-cloud-download-alt"></i></button>
+                </form>
+            </div>
+        </div>
+
+        <div class="files">
+
+            @foreach (var file in ViewBag.Files)
+            {
+                <div class="row file">
+                    <div class="col-md-1">
+                        <i class="fas fa-file"></i>
+                    </div>
+
+                    <div class="col-md-4">
+                        <a href="http://drive.google.com/file/d/@file.Id" data-id="@file.Id" target="_blank">@file.Name</a>
+                    </div>
+                    <div class="col-md-7 deleteFile pull-right">
+                        <i class="fas fa-trash"></i>
+                    </div>
+                </div>
+            }
+
+        </div>
+        <form enctype="multipart/form-data" method="post" action="/Order/UploadFile" id="uploadForm" class="form-group">
+            <input type="hidden" name="Order" value="@ViewBag.Id" />
+            <div class="form-group">
+                <a name="upload"></a>
+                <input type="file" class="form-control" name="fileToOrder" />
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary" type="button" id="uploadFile">Завантажити</button>
+            </div>
+        </form>
+
+    </div>
+    <div style="display:none" id="preLoader">
+        <div class="container">
+            <div class="row ">
+                <div class="col-md-12" align="center"><div class="loader"></div></div>
+                <div class="col-md-12" align="center" style="padding-top:17px">Завантаження файлу...</div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Orders{
+
+    <link href="~/Content/Orders.css" rel="stylesheet" />
+    <script src="~/Scripts/Orders.js"></script>
+
+}

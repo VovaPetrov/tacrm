@@ -1,0 +1,37 @@
+﻿@using WebApplicationMVC.Models
+@model LoginViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Авторизація</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="../../Content/Auto.css" />
+    @Styles.Render("~/Content/css")
+</head>
+<body>
+    <div id="wrap">
+
+        @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, new { @id = "slick-login", role = "form" , autocomplete="off" }))
+        {
+            @Html.AntiForgeryToken()
+            <img src="../../Content/images/ta.png" id="formicon" alt="">
+           
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+            @Html.LabelFor(m => m.Email, new { })
+            @Html.TextBoxFor(m => m.Email, new { @placeholder = "Логін" })
+            @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+            @Html.LabelFor(m => m.Password, new { })
+            @Html.PasswordFor(m => m.Password, new { @id = "password", @placeholder = "Ваш пароль..." })
+            @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+
+            <input type="submit" value="Увійти" id="SignBtn">
+
+        }
+    </div>
+</body>
+</html>

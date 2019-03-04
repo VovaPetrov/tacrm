@@ -1,0 +1,15 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<p class="label">Виберіть команду</p>
+<div class="container ">
+    <div class="row justify-content-center">
+        <div class="col-md-4 blocks first" onclick="window.location.href = '/Order/Add'"><div>Зареєструвати замовлення</div></div>
+        <div class="col-md-4 blocks second" onclick="window.location.href = '/Calendar/Index'"><div>Перейти в календар</div></div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-4 blocks third" onclick="window.location.href = '/Missions/Index'"><div>Стоворити завдання</div></div>
+        <div class="col-md-4 blocks fourth" onclick="window.location.href = '/Missions/IndexUnCompleted'"><div>Невиконанні завдання</div></div>
+    </div>
+</div>

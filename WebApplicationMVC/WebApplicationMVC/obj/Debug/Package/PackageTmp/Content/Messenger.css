@@ -1,0 +1,83 @@
+﻿.RightChat {
+    height: 480px;   
+}
+.ChatBody {
+    background-color: azure;
+    overflow: scroll;
+    overflow-x: visible;
+    height: 460px;
+}
+#SendMessage {
+    margin-top:4px;
+}
+.countMessages {
+    margin-top: -1px;
+    border:3px solid orange;
+        margin-right:-2px;
+    float: right;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+.countUnreadMessages {
+    margin-top: -3px;
+    margin-right: -2px;
+    float: right;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+.Message {
+    margin-top: 3px;
+    margin-left: 16px;
+    padding: 5px;
+    border: 1px solid gray;
+    border-radius: 3px;
+    background-color: white;
+    max-width: 280px;
+}
+.Dialog {
+    background-color: cornflowerblue;
+    color: white;
+    cursor: pointer;
+    padding:3px;
+  margin-top:6px;
+}
+.DateTime{
+    font-size:0.8em;
+    font-style:italic;
+    color:gray;
+}
+#MessGroup {
+    margin-left: 8px;
+}
+#ListUsers>ul{
+    list-style-type:none;
+}
+.liUser{
+    cursor: pointer;
+    background-color: cornflowerblue;
+    color:white;
+    margin-top:6px;
+    padding:4px;
+}
+.liUser:hover{
+    color:cornflowerblue;
+    background-color:snow;
+}
+#List {
+        height: 320px;
+        overflow-y: scroll;
+
+}
+.lastMess {
+    color: black;
+    background-color: white;
+    margin: 5px;
+    font-size: 0.8em;
+    padding: 2px;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.sender{
+    font-size:0.8em;
+    font-style:italic;
+}
