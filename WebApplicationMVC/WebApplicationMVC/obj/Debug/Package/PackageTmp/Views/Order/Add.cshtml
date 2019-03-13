@@ -4,7 +4,6 @@
     ViewBag.Title = "Add";
     var Id = User.Identity.GetUserId();
     var db = new ApplicationDbContext();
-    var Users = db.Users.ToList();
  
 }
 <div style="display:none" id="preLoader">
@@ -62,7 +61,7 @@
                 </select>
             </div>
             <div class="form-group col-md-4">
-                <label for="branchSelect">Філія</label>
+                <label for="branchSelect">Філія Джерела</label>
                 <select class="form-control" id="branchSelect" name="BranchId">
                     <option>Не вибрано</option>
                     @foreach (var branch in ViewBag.Branches)
@@ -74,17 +73,46 @@
 
         </div>
     </div>
-
     <div class="container">
-        <h5>Виконавці</h5>
         <div class="row">
             <div class="form-group col-md-4">
-                @foreach (var user in Users)
+                <label for="counterpartySelect">Контрагент (звітність)</label>
+                <select class="form-control" id="counterpartySelect" name="CounterpartyId">
+                    <option value="">Не вибрано</option>
+                    @foreach (var counterparty in ViewBag.Counterparties)
+                    {
+                        string fullName = $"{counterparty.LastName}  {counterparty.FirstName} {counterparty.MiddleName}";
+                        <option value="@counterparty.Id">@fullName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4 form-group">
+                <label>Дата передачі Звіту Замовнику</label>
+                <input type="date" name="DateOfTransfer" class="form-control" />
+            </div>
+        </div>
+    </div>
+    <div class="container">
+       
+        <div class="row">
+            <div class="form-group col-md-4">
+                <h5>Виконавці</h5>
+                @foreach (var user in ViewBag.Managers)
                 {
                     string fullName = $"{user.LastName}  {user.FirstName} {user.MiddleName}";
 
                     <input type="checkbox" value="@user.Id" name="UserId" @if (user.Id == Id) { @: checked
                            } /> @fullName <br />
+
+                    }
+            </div>
+            <div class="form-group col-md-4">
+                <h5>Підписанти</h5>
+                @foreach (var user in ViewBag.Managers)
+                {
+                    string fullName = $"{user.LastName}  {user.FirstName} {user.MiddleName}";
+
+                    <input type="checkbox" value="@user.Id" name="SignatoryId" /> @fullName <br />
 
                     }
             </div>
@@ -184,6 +212,10 @@
         <h5>Верифікація</h5>
         <div class="row">
             <div class="col-md-4 form-group">
+                <label>Дата оцінки</label>
+                <input type="date" name="DateOfExpert" class="form-control" />
+            </div>
+            <div class="col-md-4 form-group">
                 <label>Дата прийняття на верифікацію</label>
                 <input type="date" name="DateTakeVerification" class="form-control" />
             </div>
@@ -203,11 +235,7 @@
     </div>
     <div class="container">
         <h5>Передача Звіту Замовнику</h5>
-        <div class="row">
-            <div class="col-md-4 form-group">
-                <label>Дата передачі Звіту Замовнику</label>
-                <input type="date" name="DateOfTransfer" class="form-control" />
-            </div>
+        <div class="row">        
             <div class="col-md-4 form-group">
                 <label>Коментар</label>
                 <input type="text" name="CommentsOfTransfer" class="form-control" />
@@ -242,8 +270,8 @@
                         </label>
                         <br />
 
-                            <input type="radio" name="oplata" value="true"> Так
-                            <input type="radio" name="oplata" value="false">Ні
+                        <input type="radio" name="oplata" value="true"> Так
+                        <input type="radio" name="oplata" value="false">Ні
 
 
                     </div>
@@ -251,7 +279,7 @@
                 <div class="col-md-3">
                     <h5>Дата оплати</h5>
                     <div class="form-group">
-                        <input type="date" class="form-control" name="DateOfPay"  />
+                        <input type="date" class="form-control" name="DateOfPay" />
                     </div>
                 </div>
             }
@@ -265,8 +293,8 @@
                         </label>
                         <br />
 
-                          <input type="radio" name="oplata" readonly value="true"> Так
-                          <input type="radio" name="oplata" readonly value="false">Ні
+                        <input type="radio" name="oplata" readonly value="true"> Так
+                        <input type="radio" name="oplata" readonly value="false">Ні
 
 
                     </div>
@@ -298,9 +326,7 @@
         <hr />
         <div class="row">
             <div class="col-md-4">
-                <table id="partsPrice">
-
-                </table>
+                <table id="partsPrice"></table>
                 <div class="form-group">
                     <label>Всього</label>
                     <input type="number" class="form-control" name="TotalPrice" value="@ViewBag.Sum" />

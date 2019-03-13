@@ -18,13 +18,12 @@ using System.Data;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
-
 using System.Text;
-
+using System.Threading.Tasks;
 
 namespace WebApplicationMVC.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin,Manager")]
     public class OrderController : Controller
     {
         ApplicationDbContext db;
@@ -36,12 +35,8 @@ namespace WebApplicationMVC.Controllers
         {
             string[] Scopes = { DriveService.Scope.Drive };
             string ApplicationName = "Drive API .NET Quickstart";
-
-
             UserCredential credential;
-
-            using (var stream =
-                      new FileStream(Server.MapPath(("~/Content/API/DriveCredentials.json")), FileMode.Open, FileAccess.Read))
+            using (var stream = new FileStream(Server.MapPath(("~/Content/API/DriveCredentials.json")), FileMode.Open, FileAccess.Read))
             {
                 String FilePath = Server.MapPath(("~/Content/API/DriveServiceCredentials.json"));
 
@@ -52,15 +47,12 @@ namespace WebApplicationMVC.Controllers
                     CancellationToken.None,
                     new FileDataStore(FilePath, true)).Result;
             }
-
-
             // Create Drive API service.
             var service = new DriveService(new BaseClientService.Initializer()
             {
                 HttpClientInitializer = credential,
                 ApplicationName = ApplicationName,
             });
-
             return service;
         }
         public ActionResult Index()
@@ -97,7 +89,7 @@ namespace WebApplicationMVC.Controllers
 
             return View(finalResult);
         }
-        public RedirectResult CreateCopy(int? orderId)
+        public async Task<RedirectResult> CreateCopy(int? orderId)
         {
             int id;
             var order = db.Orders.FirstOrDefault(e => e.Id == orderId.Value);
@@ -111,7 +103,7 @@ namespace WebApplicationMVC.Controllers
                 Comments = order.Comments,
                 CommentVerification = order.CommentVerification,
                 CountDays = order.CountDays,
-                CreatedDate = DateTime.Now,
+                CreatedDate = order.CreatedDate,
                 DateOfDirectVerification = order.DateOfDirectVerification,
                 DateOfEndVerification = order.DateOfEndVerification,
                 DateOfExpert = order.DateOfExpert,
@@ -125,15 +117,35 @@ namespace WebApplicationMVC.Controllers
                 PriceOverWatch = order.PriceOverWatch,
                 PropsId = order.PropsId,
                 SourceId = order.SourceId,
-                StatusId = order.StatusId,                
+                StatusId = order.StatusId,  
+                CounterpartyId = order.CounterpartyId,
             };
-            string month = newOrder.CreatedDate.Value.Month <= 9 ? "0" + newOrder.CreatedDate.Value.Month : newOrder.CreatedDate.Value.Month + "";
-            int count = db.Orders.Where(e => e.CreatedDate.Value.Month == newOrder.CreatedDate.Value.Month && e.CreatedDate.Value.Year == newOrder.CreatedDate.Value.Year).Count();
-            string Name = newOrder.CreatedDate.Value.Year + "" + month + String.Format("{0:0000}", count + 1);
+
+            string month = DateTime.Now.Month <= 9 ? "0" + DateTime.Now.Month : DateTime.Now.Month + "";
+            var lastOrder = db.Orders.Where(e => e.CreatedDate.Value.Month == DateTime.Now.Month && e.CreatedDate.Value.Year == DateTime.Now.Year).ToList().LastOrDefault();
+            int lastCount;
+            if (lastOrder == null)
+            {
+                lastCount = 1;
+            }
+            else
+            {
+                lastCount = Convert.ToInt32(lastOrder.Name.Substring(6));
+            }
+
+            string Name = DateTime.Now.Year + "" + month + String.Format("{0:0000}", lastCount + 1);
             newOrder.Name = Name;
+
             db.Orders.Add(newOrder);
-            db.SaveChanges();
+            await db.SaveChangesAsync();
             id = newOrder.Id;
+
+            var signId = db.SignatoryOrders.Where(e => e.OrderId == order.Id).Select(e => e.SignatoryId);
+            foreach (var i in signId)
+            {
+                SignatoryOrder performers = new SignatoryOrder() { OrderId = id, SignatoryId = i };
+                db.SignatoryOrders.Add(performers);
+            }
 
             var usersId = db.Performerses.Where(e=>e.OrderId==order.Id).Select(e=>e.UserId);
             foreach (var i in usersId)
@@ -628,7 +640,11 @@ namespace WebApplicationMVC.Controllers
 
             var prices = db.Prices.Where(e => e.PriceListId == order.PriceListId).ToArray();
             db.Prices.RemoveRange(prices);
-            db.PriceLists.Remove(db.PriceLists.Where(e => e.Id == order.PriceListId).FirstOrDefault());
+            var priceList = db.PriceLists.Where(e => e.Id == order.PriceListId).FirstOrDefault();
+            if (priceList != null)
+            {
+                db.PriceLists.Remove(priceList);
+            }
             var performerses = db.Performerses.Where(e => e.OrderId == order.Id).ToArray();
             db.Performerses.RemoveRange(performerses);
             var objects = db.ObjectLists.Where(e => e.OrderId == order.Id).ToList();
@@ -845,46 +861,71 @@ namespace WebApplicationMVC.Controllers
             return newDate;
         }
         [HttpPost]
-        public ActionResult Edit(int OrderId, int? MetaId, int StatusId, int SourceId, int? BranchId, int? CountDays, DateTime? DateOfPay, string[] UsersId, string ClientName, DateTime? DateOfDocument, string Tel, string IPN, string Email, string Reckv, string OwnerName, string OwnerTel, string OwnerIPN, string OwnerEmail, string OwnerReckv, int ReckvId, string Comments, string Inspector, DateTime? InspectionDate, decimal? InspectionPrice, string IsPaid, string[] AppoArr, decimal[] PriceArr,
-        bool? PaidOverWatch, string CommentsOfTransfer, DateTime? DateOfTransfer, DateTime? DateTakeVerification, DateTime? DateDirectVerification, DateTime? DateEndVerification, string CommentsVerification, DateTime? DateOfExpert)
+        public ActionResult Edit(OrderDTO model)
         {
-            var objList = db.ObjectLists.Where(e => e.OrderId == OrderId);
-            var objListId = db.ObjectLists.Where(e => e.OrderId == OrderId).Select(e => e.Id);
+            var objList = db.ObjectLists.Where(e => e.OrderId == model.OrderId);
+            var objListId = db.ObjectLists.Where(e => e.OrderId == model.OrderId).Select(e => e.Id);
             var objValues = db.ObjectValues.Where(e => objListId.Contains(e.ObjectListId));
             db.ObjectValues.RemoveRange(objValues);
             db.ObjectLists.RemoveRange(objList);
 
-            var order = db.Orders.Where(e => e.Id == OrderId).FirstOrDefault();
-            order.MetaId = MetaId.HasValue ? MetaId.Value : 0;
-            order.StatusId = StatusId;
-            order.BranchId = BranchId;
-            order.SourceId = SourceId;
-            order.PropsId = ReckvId;
-            order.Comments = Comments;
+            var order = db.Orders.Where(e => e.Id == model.OrderId).FirstOrDefault();
+            order.MetaId = model.MetaId.HasValue ? model.MetaId.Value : 0;
+            order.StatusId = model.StatusId;
+            order.BranchId = model.BranchId;
+            order.SourceId = model.SourceId;
+            order.PropsId = model.ReckvId;
+            order.Comments = model.Comments;
 
-            if (CountDays.HasValue)
-                order.CountDays = CountDays.Value;
+            if (model.CountDays.HasValue)
+                order.CountDays = model.CountDays.Value;
 
-            var UsersDel = db.Performerses.Where(e => e.OrderId == OrderId).ToList();
+            var UsersDel = db.Performerses.Where(e => e.OrderId == model.OrderId).ToList();
             db.Performerses.RemoveRange(UsersDel);
 
-            foreach (var i in UsersId) {
-                Performers performers = new Performers() { OrderId = OrderId, UserId = i };
+            foreach (var i in model.UsersId) {
+                Performers performers = new Performers() { OrderId = model.OrderId.Value, UserId = i };
                 db.Performerses.Add(performers);
             }
+
+            var SignatoriesDel = db.SignatoryOrders.Where(e => e.OrderId == model.OrderId).ToList();
+            db.SignatoryOrders.RemoveRange(SignatoriesDel);
+            List<string> SignatoriesId = new List<string>();
+            if (model.SignatoriesId != null)
+            {
+                SignatoriesId = model.SignatoriesId.Distinct().ToList();
+            }
+            if (SignatoriesId.Count == 0)
+            { 
+                foreach (var i in model.UsersId)
+                {
+                    SignatoryOrder performers = new SignatoryOrder() { OrderId = model.OrderId.Value, SignatoryId = i };
+                    db.SignatoryOrders.Add(performers);
+                }
+            }
+            else
+            {
+                foreach (var i in SignatoriesId)
+                {
+                    SignatoryOrder performers = new SignatoryOrder() { OrderId = model.OrderId.Value, SignatoryId = i };
+                    db.SignatoryOrders.Add(performers);
+                }
+            }
+
+            order.CounterpartyId = model.CounterpartyId;
             //DateOfDocument
             DateDocument date;
-            if (DateOfDocument.HasValue && order.CreatedDate != DateOfDocument.Value)
+            if (model.DateOfDocument.HasValue && order.CreatedDate != model.DateOfDocument.Value)
             {
-                date = new DateDocument() { OrderId = order.Id, DateOfDocument = DateOfDocument.Value };
+                date = new DateDocument() { OrderId = order.Id, DateOfDocument = model.DateOfDocument.Value };
                 db.DateDocuments.Add(date);
             }
-            order.DateOfPay = DateOfPay;
+            order.DateOfPay = model.DateOfPay;
 
-            Client newClient = new Client() { IPN_EDRPOY = IPN, Email = Email, FullName = ClientName, Phone = Tel, Props = Reckv };
+            Client newClient = new Client() { IPN_EDRPOY = model.IPN, Email = model.Email, FullName = model.ClientName, Phone = model.Tel, Props = model.Reckv };
             db.Clients.Add(newClient);
 
-            Owner owner = new Owner() { FullName = OwnerName, IPN_EDRPOY = OwnerIPN, Email = OwnerEmail, Props = OwnerReckv, Phone = OwnerTel };
+            Owner owner = new Owner() { FullName = model.OwnerName, IPN_EDRPOY = model.OwnerIPN, Email = model.OwnerEmail, Props = model.OwnerReckv, Phone = model.OwnerTel };
             db.Owners.Add(owner);
             db.SaveChanges();
 
@@ -892,23 +933,23 @@ namespace WebApplicationMVC.Controllers
             order.OwnerId = owner.Id;
 
 
-            order.CommentOfTransfer = CommentsOfTransfer;
-            order.DateOfTransfer = DateOfTransfer;
-            order.DateOfTakeVerification = DateTakeVerification;
-            order.DateOfEndVerification = DateEndVerification;
-            order.DateOfDirectVerification = DateDirectVerification;
-            order.CommentVerification = CommentsVerification;
-            order.DateOfExpert = DateOfExpert;
+            order.CommentOfTransfer = model.CommentsOfTransfer;
+            order.DateOfTransfer = model.DateOfTransfer;
+            order.DateOfTakeVerification = model.DateTakeVerification;
+            order.DateOfEndVerification = model.DateEndVerification;
+            order.DateOfDirectVerification = model.DateDirectVerification;
+            order.CommentVerification = model.CommentsVerification;
+            order.DateOfExpert = model.DateOfExpert;
 
-            order.FullNameWatcher = Inspector ?? "";
-            if (InspectionDate.HasValue)
-                order.OverWatch = InspectionDate.Value;
-            if (InspectionPrice.HasValue)
-                order.PriceOverWatch = InspectionPrice.Value;
-            order.IsPaidOverWatch = PaidOverWatch ?? false;
+            order.FullNameWatcher = model.Inspector;
+            if (model.InspectionDate.HasValue)
+                order.OverWatch = model.InspectionDate.Value;
+            if (model.InspectionPrice.HasValue)
+                order.PriceOverWatch = model.InspectionPrice.Value;
+            order.IsPaidOverWatch = model.PaidOverWatch ?? false;
 
-            if (IsPaid != null)
-                if (IsPaid == "true")
+            if (model.IsPaid != null)
+                if (model.IsPaid == "true")
                     order.IsPaid = true;
                 else
                     order.IsPaid = false;
@@ -918,10 +959,10 @@ namespace WebApplicationMVC.Controllers
             db.SaveChanges();
             order.PriceListId = list.Id;
 
-            if (AppoArr != null)
-                for (int i = 0; i < AppoArr.Length; i++)
+            if (model.AppoArr != null)
+                for (int i = 0; i < model.AppoArr.Length; i++)
                 {
-                    Price price = new Price() { PriceListId = list.Id, Value = PriceArr[i], Appointment = AppoArr[i] };
+                    Price price = new Price() { PriceListId = list.Id, Value = model.PriceArr[i], Appointment = model.AppoArr[i] };
                     db.Prices.Add(price);
                 }
 
@@ -929,81 +970,114 @@ namespace WebApplicationMVC.Controllers
             return Content(order.Id + "");
         }
         [HttpPost]
-        public ActionResult Add(int? MetaId, int StatusId, int SourceId, int? BranchId, int? CountDays, DateTime? DateOfPay, string[] UsersId, string ClientName, DateTime? DateOfDocument, string Tel, string IPN, string Email, string Reckv, string OwnerName, string OwnerTel, string OwnerIPN, string OwnerEmail, string OwnerReckv, int ReckvId, string Comments,
-        string Inspector, DateTime? InspectionDate, bool? PaidOverWatch, decimal? InspectionPrice, string IsPaid,
-        string CommentsOfTransfer, DateTime? DateOfTransfer, DateTime? DateTakeVerification, DateTime? DateDirectVerification, DateTime? DateEndVerification, string CommentsVerification, string[] AppoArr, decimal[] PriceArr,DateTime? DateOfExpert)
+        public ActionResult Add(OrderDTO model)
         {
             
             Order order = new Order();
          
             int orderId;
-            order.MetaId = MetaId.HasValue ? MetaId.Value : 0;
-            order.StatusId = StatusId;
-            order.SourceId = SourceId;
-            if (BranchId != null)
-                order.BranchId = BranchId.Value;
-            order.PropsId = ReckvId;
-            order.Comments = Comments;
+            order.MetaId = model.MetaId.HasValue ? model.MetaId.Value : 0;
+            order.StatusId = model.StatusId;
+            order.SourceId = model.SourceId;
+            if (model.BranchId != null)
+                order.BranchId = model.BranchId.Value;
+            order.PropsId = model.ReckvId;
+            order.Comments = model.Comments;
             order.CreatedDate = DateTime.Now.AddHours(1);
             string month = order.CreatedDate.Value.Month <= 9 ? "0" + order.CreatedDate.Value.Month : order.CreatedDate.Value.Month + "";
-            int count = db.Orders.Where(e => e.CreatedDate.Value.Month == order.CreatedDate.Value.Month && e.CreatedDate.Value.Year == order.CreatedDate.Value.Year).Count();
-            string Name = order.CreatedDate.Value.Year + "" + month + String.Format("{0:0000}", count + 1);
+            var lastOrder = db.Orders.Where(e => e.CreatedDate.Value.Month == order.CreatedDate.Value.Month && e.CreatedDate.Value.Year == order.CreatedDate.Value.Year).ToList().LastOrDefault();
+            int lastCount;
+            if (lastOrder == null)
+            {
+                lastCount = 1;
+            }
+            else
+            {
+                lastCount = Convert.ToInt32(lastOrder.Name.Substring(6));
+            }
+
+            string Name = order.CreatedDate.Value.Year + "" + month + String.Format("{0:0000}", lastCount + 1);
             order.Name = Name;
 
-            if (CountDays.HasValue)
-                order.CountDays = CountDays.Value;
-            if (DateOfExpert.HasValue)
-                order.DateOfExpert = DateOfExpert;
+            if (model.CountDays.HasValue)
+                order.CountDays = model.CountDays.Value;
+            
+            order.DateOfExpert = model.DateOfExpert;
+
             db.Orders.Add(order);
             db.SaveChanges();
 
             orderId = order.Id;
-            
-            //string folder = CreateFolder("Замовлення: " + order.Name);
-            //order.DirectoryId = folder;
 
-            var usersId = UsersId.Distinct().ToArray();
+            string folder = CreateFolder("Замовлення: " + order.Name);
+            order.DirectoryId = folder;
+
+            var usersId = model.UsersId.Distinct().ToArray();
             foreach (var i in usersId) {
                 Performers performers = new Performers() { OrderId = orderId, UserId = i };
                 db.Performerses.Add(performers);
             }
+
+            List<string> SignatoriesId = new List<string>();
+            if (model.SignatoriesId != null)
+            {
+                SignatoriesId = model.SignatoriesId.Distinct().ToList();
+            }
+            if (SignatoriesId.Count == 0)
+            {
+                foreach (var i in usersId)
+                {
+                    SignatoryOrder performers = new SignatoryOrder() { OrderId = orderId, SignatoryId = i };
+                    db.SignatoryOrders.Add(performers);
+                }
+            }
+            else
+            {
+                foreach (var i in SignatoriesId)
+                {
+                    SignatoryOrder performers = new SignatoryOrder() { OrderId = orderId, SignatoryId = i };
+                    db.SignatoryOrders.Add(performers);
+                }
+            }
+
+            order.CounterpartyId = model.CounterpartyId;
+
             //DateOfDocument
             DateDocument date;
-            if (DateOfDocument.HasValue)
-                date = new DateDocument() { OrderId = order.Id, DateOfDocument = DateOfDocument.Value };
+            if (model.DateOfDocument.HasValue)
+                date = new DateDocument() { OrderId = order.Id, DateOfDocument = model.DateOfDocument.Value };
             else
                 date = new DateDocument() { OrderId = order.Id, DateOfDocument = DateTime.Now.Date };
             db.DateDocuments.Add(date);
-            order.DateOfPay = DateOfPay;
+            order.DateOfPay = model.DateOfPay;
             //Client
 
-            Client client = new Client() { FullName = ClientName, IPN_EDRPOY = IPN, Email = Email, Props = Reckv, Phone = Tel };
+            Client client = new Client() { FullName = model.ClientName, IPN_EDRPOY = model.IPN, Email = model.Email, Props = model.Reckv, Phone = model.Tel };
             db.Clients.Add(client);
             db.SaveChanges();
             order.ClientId = client.Id;
 
             //Owner
 
-            Owner owner = new Owner() { FullName = OwnerName, IPN_EDRPOY = OwnerIPN, Email = OwnerEmail, Props = OwnerReckv, Phone = OwnerTel };
+            Owner owner = new Owner() { FullName = model.OwnerName, IPN_EDRPOY = model.OwnerIPN, Email = model.OwnerEmail, Props = model.OwnerReckv, Phone = model.OwnerTel };
             db.Owners.Add(owner);
             db.SaveChanges();
             order.OwnerId = owner.Id;
 
-            order.CommentOfTransfer = CommentsOfTransfer;
-            order.DateOfTransfer = DateOfTransfer;
-            order.DateOfTakeVerification = DateTakeVerification;
-            order.DateOfEndVerification = DateEndVerification;
-            order.DateOfDirectVerification = DateDirectVerification;
-            order.CommentVerification = CommentsVerification;
-            order.FullNameWatcher = Inspector ?? "";
-            if (InspectionDate.HasValue)
-                order.OverWatch = InspectionDate.Value;
-            if (InspectionPrice.HasValue)
-                order.PriceOverWatch = InspectionPrice.Value;
+            order.CommentOfTransfer = model.CommentsOfTransfer;
+            order.DateOfTransfer = model.DateOfTransfer;
+            order.DateOfTakeVerification = model.DateTakeVerification;
+            order.DateOfEndVerification = model.DateEndVerification;
+            order.DateOfDirectVerification = model.DateDirectVerification;
+            order.CommentVerification = model.CommentsVerification;
+            order.FullNameWatcher = model.Inspector ?? "";
+            order.OverWatch = model.InspectionDate;
+            if (model.InspectionPrice.HasValue)
+                order.PriceOverWatch = model.InspectionPrice.Value;
 
 
-            if (IsPaid != null)
-                if (IsPaid == "true")
+            if (model.IsPaid != null)
+                if (model.IsPaid == "true")
                     order.IsPaid = true;
                 else
                     order.IsPaid = false;
@@ -1013,13 +1087,14 @@ namespace WebApplicationMVC.Controllers
             db.SaveChanges();
             order.PriceListId = list.Id;
 
-            if (AppoArr != null)
-                for (int i = 0; i < AppoArr.Length; i++)
+            if (model.AppoArr != null)
+            {
+                for (int i = 0; i < model.AppoArr.Length; i++)
                 {
-                    Price price = new Price() { PriceListId = list.Id, Value = PriceArr[i], Appointment = AppoArr[i] };
+                    Price price = new Price() { PriceListId = list.Id, Value = model.PriceArr[i], Appointment = model.AppoArr[i] };
                     db.Prices.Add(price);
                 }
-
+            }
 
             db.SaveChanges();
             return Content(order.Id + "");
@@ -1038,6 +1113,12 @@ namespace WebApplicationMVC.Controllers
 
             bool IsUserAdmin = User.IsInRole("Admin");
             ViewBag.IsUserAdmin = IsUserAdmin;
+
+            var CounterpartiesId = db.Roles.Where(e => e.Name == "Counterparty").FirstOrDefault().Users.Select(e => e.UserId);
+            var Counterparties = db.Users.Where(e => CounterpartiesId.Contains(e.Id)).ToList();
+            ViewBag.Counterparties = Counterparties;
+
+            ViewBag.Managers = db.Users.Where(e=> !CounterpartiesId.Contains(e.Id) && e.EmailConfirmed);
 
             return View();
         }
@@ -1131,6 +1212,13 @@ namespace WebApplicationMVC.Controllers
                 ViewBag.Files = new List<Google.Apis.Drive.v3.Data.File>();
             }
 
+            var CounterpartiesId = db.Roles.Where(e => e.Name == "Counterparty").FirstOrDefault().Users.Select(e => e.UserId);
+            var Counterparties = db.Users.Where(e => CounterpartiesId.Contains(e.Id)).ToList();
+            ViewBag.Counterparties = Counterparties;
+            ViewBag.CounterpartyId = result.CounterpartyId;
+
+            ViewBag.Managers = db.Users.Where(e => !CounterpartiesId.Contains(e.Id) && e.EmailConfirmed);
+            ViewBag.Signatories = db.SignatoryOrders.Where(e=>e.OrderId==result.Id).Select(e=>e.SignatoryId).ToList();
             return View(result);
         }
         public ActionResult CreateObjList(int OrderId, int ObjId)
@@ -1328,8 +1416,23 @@ namespace WebApplicationMVC.Controllers
                 date2 = tmp;
             }
             date2 = date2.Value.AddDays(1);
-            
-            byte[] arr = new AnalyticsController().GetReport(date1,date2,User.Identity.GetUserId(),-1);
+
+            var userId = User.Identity.GetUserId();
+            var ordersIds = new List<int>();
+            var orders = new List<Order>();
+            var roleId = db.Roles.Where(e => e.Name == "Admin").FirstOrDefault().Users.FirstOrDefault();
+            if (roleId.UserId==userId)//Is it a Admin
+            {
+                    orders = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2).ToList();
+            }
+            else
+            {
+                var perfomers = db.Performerses.Where(e => e.UserId.Contains(userId)).Select(e => e.OrderId).ToList();
+                    orders = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && perfomers.Contains(e.Id)).ToList();
+            }
+            ordersIds = orders.Select(e => e.Id).ToList();
+
+            byte[] arr = new AnalyticsController().GetReport(ordersIds);
             return File(arr, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Персональний звіт.xlsx");
         }
        

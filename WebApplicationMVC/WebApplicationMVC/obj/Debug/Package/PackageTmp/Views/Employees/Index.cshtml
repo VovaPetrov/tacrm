@@ -9,16 +9,31 @@
     <div class="row">
 
         <div class="col-md-4">
-            <button type="button" class="btn btn-primary" onclick="location.href='/Account/Register'" ><i class="fas fa-plus"></i> Менеджера</button>
+            <button type="button" class="btn btn-primary" onclick="location.href='/Account/Register'"><i class="fas fa-plus"></i> Користувача</button>
         </div>
-        <div class="col-md-2"><h2>Менеджери</h2></div>
+        <div class="col-md-2"><h2>Користувачі</h2></div>
     </div>
     <hr />
+    
     <div class="container">
-        @foreach (var i in Model)
+        <h4>Менеджери</h4>
+        @foreach (var i in Model.Managers)
         {
             <div class="row user">
-                <input type="hidden" class="Id" name="Id" value="@i.Id"  />
+                <input type="hidden" class="Id" name="Id" value="@i.Id" />
+                <div class="col-md-4 FullName">@i.LastName @i.FirstName @i.MiddleName</div>
+                <div class="col-md-4 Email">@i.Email</div>
+                <div class="col-md-2 Tel">@i.Tel</div>
+            </div>
+        }
+    </div>
+   
+    <div class="container">
+        <h4>Контрагенти</h4>
+        @foreach (var i in Model.Counterparties)
+        {
+            <div class="row counterparty">
+                <input type="hidden" class="Id" name="Id" value="@i.Id" />
                 <div class="col-md-4 FullName">@i.LastName @i.FirstName @i.MiddleName</div>
                 <div class="col-md-4 Email">@i.Email</div>
                 <div class="col-md-2 Tel">@i.Tel</div>
@@ -52,6 +67,42 @@
         </div>
         <button type="submit" class="btn btn-success">Редагувати</button>
         <button type="button" class="btn btn-danger" id="DeleteUser">Видалити</button>
+    </form>
+</div>
+<div id="editCounterparty" style="display:none;">
+    <h4>Редагування контрагента</h4>
+    <form action="/Employees/EditCounterparty" method="post">
+        <input type="hidden" name="Id" />
+        <div class="form-group">
+            <label for="LastName">Прізвище</label>
+            <input type="text" class="form-control" id="LastNameCounter" required name="LastName">
+        </div>
+        <div class="form-group">
+            <label for="FirstName">Ім'я</label>
+            <input type="text" class="form-control" id="FirstNameCounter" required name="FirstName">
+        </div>
+        <div class="form-group">
+            <label for="MiddleName">По батькові</label>
+            <input type="text" class="form-control" id="MiddleNameCounter"  name="MiddleName">
+        </div>
+        <div class="form-group">
+            <label for="Email">Email</label>
+            <input type="email" class="form-control" id="EmailCounter" name="Email" required >
+        </div>
+        <div class="form-group">
+            <label for="Tel">Телефон</label>
+            <input type="tel" class="form-control" id="TelCounter" required name="Tel">
+        </div>
+        <div class="form-group">
+            <label for="Tel">Змінити пароль</label>
+            <input type="password" class="form-control" id="passwordCounter" required name="Password">
+        </div>
+        <div class="form-group">
+            <label for="Tel">Повторіть пароль</label>
+            <input type="password" class="form-control" id="сonfirmPasswordCounter" required name="ConfirmPassword">
+        </div>
+        <button type="submit" class="btn btn-success">Редагувати</button>
+        <button type="button" class="btn btn-danger" id="DeleteCounterparty">Видалити</button>
     </form>
 </div>
 

@@ -10,28 +10,33 @@ using Microsoft.AspNet.Identity;
 
 namespace WebApplicationMVC.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin,Manager")]
     public class HomeController : Controller
     {
+        ApplicationDbContext db;
+        public HomeController()
+        {
+            db = new ApplicationDbContext();
+        }
+        [HttpGet]
         public ActionResult Index()
         {
             ViewBag.Page = "Головна";
             return View();
         }
+        [HttpGet]
         public ActionResult Contacts(int? page)
         {
             ViewBag.Page = "Контакти";
-            var contactList = new ApplicationDbContext().Contacts.OrderBy(e=>e.LastName);
+            var contactList = db.Contacts.OrderBy(e=>e.LastName);
             contactList.Reverse();
             int pageSize = 6;
-            int pageNumber = (page ?? 1);
+            int pageNumber = page ?? 1;
             return View(contactList.ToPagedList(pageNumber, pageSize));
-
         }
         [HttpPost]
         public ActionResult Contacts(Contact contact)
-        { 
-            var db = new ApplicationDbContext();
+        {           
             db.Contacts.Add(contact);
             db.SaveChanges();
             var contactList = db.Contacts.ToList();
@@ -43,17 +48,20 @@ namespace WebApplicationMVC.Controllers
         [HttpPost]
         public ActionResult EditContact(Contact contact)
         {
-            var db = new ApplicationDbContext();
-            var cont = db.Contacts.Where(e => e.Id == contact.Id).FirstOrDefault();
 
-            cont.LastName = contact.LastName;
-            cont.FirstName = contact.FirstName;
-            cont.MiddleName = contact.MiddleName;
-            cont.Company = contact.Company;
-            cont.Position = contact.Position;
-            cont.Tel = contact.Tel;
-            cont.Email = contact.Email;
-            cont.Comments = contact.Comments;
+            var editedContact = db.Contacts.Where(e => e.Id == contact.Id).FirstOrDefault();
+
+            if (editedContact==null)
+                return new RedirectResult("/Home/Contacts");
+
+            editedContact.LastName = contact.LastName;
+            editedContact.FirstName = contact.FirstName;
+            editedContact.MiddleName = contact.MiddleName;
+            editedContact.Company = contact.Company;
+            editedContact.Position = contact.Position;
+            editedContact.Tel = contact.Tel;
+            editedContact.Email = contact.Email;
+            editedContact.Comments = contact.Comments;
             db.SaveChanges();
 
             return new RedirectResult("/Home/Contacts");
@@ -61,15 +69,11 @@ namespace WebApplicationMVC.Controllers
         [HttpPost]
         public ActionResult DelContact(int Id)
         {
-            var db = new ApplicationDbContext();
 
             var contact = db.Contacts.Where(e => e.Id == Id).FirstOrDefault();
-
             db.Contacts.Remove(contact);
-            db.SaveChanges();
-
-           
-           return new RedirectResult("/Home/Contacts");
+            db.SaveChanges();         
+            return new RedirectResult("/Home/Contacts");
         }
         [HttpPost]
         public ActionResult SearchContact(string query)

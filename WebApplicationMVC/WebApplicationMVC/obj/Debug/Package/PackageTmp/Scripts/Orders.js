@@ -150,6 +150,19 @@
                     $("#preLoader").dialog("close");
                     return false;
                 }
+
+                var SignatoriesId = new Array();
+                $("#AddOrderForm").find("input[name='SignatoryId']").each(
+                    function () {
+                        if ($(this).is(':checked')) {
+                            SignatoriesId.push($(this).val());
+                        }
+                    }
+                );
+
+
+
+                var CounterpartyId = $("#AddOrderForm").find("#counterpartySelect option:selected").val();
                 //Client
                 var ClientName = $("#AddOrderForm").find("input[name='ClientName']").val();
                 var IPN = $("#AddOrderForm").find("input[name='IPN']").val();
@@ -176,9 +189,18 @@
                 var DateDirectVerification = $("#AddOrderForm").find("input[name='DateDirectVerification']").val();
                 var DateEndVerification = $("#AddOrderForm").find("input[name='DateEndVerification']").val();
                 var CommentsVerification = $("#AddOrderForm").find("input[name='CommentsVerification']").val();
+                var DateOfExpert = $("#AddOrderForm").find("input[name='DateOfExpert']").val();
 
                 var IsPaid = $("#AddOrderForm").find("input[name='oplata']:checked").val();
                 var DateOfPay = $("#AddOrderForm").find("input[name='DateOfPay']").val();
+
+                var ObjListArray = new Array();
+                var objId = $(".objId");
+                if (objId.length == 0) {
+                    alert("Додайте хоча б 1 об'єкт для оцінки");
+                    $("#preLoader").dialog("close");
+                    return false;
+                }
 
                 if (ClientName == null || ClientName == "") {
                     alert("Введіть ПІБ замовника");
@@ -204,12 +226,15 @@
                     }
                 );
 
+
+
+                var orderId = "";
                 $.ajax({
                     type: "POST", url: "/Order/Add",
                     success:
                         function (data) {
-                                var ObjListArray = new Array();
-                                var objId = $(".objId");
+                                orderId = data;
+                                
                                 for (var i = 0; i < objId.length; i++) {
 
                                     $.ajax({
@@ -232,15 +257,15 @@
                                     );
                                 }
                             alert("Замовлення збережено");
-                            location.href = "/Order/Index";
+                            location.href = "/Order/Get?id=" + orderId;
                         },
                     data: {
                         MetaId: MetaId, CountDays: CountDays, StatusId: StatusId, SourceId: SourceId, BranchId: BranchId,
-                        UsersId: UsersId, ClientName: ClientName, Tel: Tel, IPN: IPN, Email: Email, Reckv: Reckv, OwnerName: OwnerName, OwnerTel: OwnerTel, OwnerIPN: OwnerIPN, OwnerEmail: OwnerEmail, OwnerReckv: OwnerReckv,
+                        UsersId: UsersId, CounterpartyId: CounterpartyId ,ClientName: ClientName, Tel: Tel, IPN: IPN, Email: Email, Reckv: Reckv, OwnerName: OwnerName, OwnerTel: OwnerTel, OwnerIPN: OwnerIPN, OwnerEmail: OwnerEmail, OwnerReckv: OwnerReckv,
                         ReckvId: ReckvId, Comments: Comments, DateOfDocument: dateOfDocument, DateOfPay: DateOfPay,
                         IsPaid: IsPaid, PriceArr: PriceArr, AppoArr: AppoArr,
                         Inspector: Inspector, InspectionDate: InspectionDate, InspectionPrice: InspectionPrice, CommentsOfTransfer: CommentsOfTransfer, DateOfTransfer: DateOfTransfer,
-                        DateTakeVerification: DateTakeVerification, DateDirectVerification: DateDirectVerification, DateEndVerification: DateEndVerification, CommentsVerification: CommentsVerification
+                        DateTakeVerification: DateTakeVerification, DateDirectVerification: DateDirectVerification, DateEndVerification: DateEndVerification, CommentsVerification: CommentsVerification, DateOfExpert: DateOfExpert, SignatoriesId: SignatoriesId
                     }
                 });
 
@@ -283,6 +308,16 @@
                     $("#preLoader").dialog("close");
                     return false;
                 }
+
+                var SignatoriesId = new Array();
+                $("#EditOrder").find("input[name='SignatoryId']").each(
+                    function () {
+                        if ($(this).is(':checked')) {
+                            SignatoriesId.push($(this).val());
+                        }
+                    }
+                );
+
                 var ClientName = $("#EditOrder").find("input[name='ClientName']").val();
                 var IPN = $("#EditOrder").find("input[name='IPN']").val();
                 var Tel = $("#EditOrder").find("input[name='Tel']").val();
@@ -314,6 +349,10 @@
                 var DateDirectVerification = $("#EditOrder").find("input[name='DateDirectVerification']").val();
                 var DateEndVerification = $("#EditOrder").find("input[name='DateEndVerification']").val();
                 var CommentsVerification = $("#EditOrder").find("input[name='CommentsVerification']").val();
+                var DateOfExpert = $("#EditOrder").find("input[name='DateOfExpert']").val();
+
+                var СounterpartyId = $("#EditOrder").find("#counterpartySelect option:selected").val();
+   
 
                 if (ClientName == null || ClientName == "") {
                     alert("Введіть ПІБ замовника");
@@ -372,14 +411,14 @@
                     data: {
                         OrderId: $("input[name='Order']").val(),
                         MetaId: MetaId, StatusId: StatusId, SourceId: SourceId, BranchId: BranchId,
-                        UsersId: UsersId, ClientName: ClientName, Tel: Tel, IPN: IPN, Email: Email, Reckv: Reckv,
+                        UsersId: UsersId, CounterpartyId: СounterpartyId, ClientName: ClientName, Tel: Tel, IPN: IPN, Email: Email, Reckv: Reckv,
                         ReckvId: ReckvId, Comments: Comments, CountDays: CountDays,
                         DateOfPay: DateOfPay, DateOfDocument: dateOfDocument,
                         OwnerName: OwnerName, OwnerTel: OwnerTel, OwnerIPN: OwnerIPN, OwnerEmail: OwnerEmail, OwnerReckv: OwnerReckv,
                         Inspector: Inspector,PaidOverWatch: InspectionIsPaid, InspectionDate: InspectionDate, InspectionPrice: InspectionPrice, IsPaid: IsPaid, PriceArr: PriceArr, AppoArr: AppoArr,
                         CommentsOfTransfer: CommentsOfTransfer, DateOfTransfer: DateOfTransfer,
-                        DateTakeVerification: DateTakeVerification, DateDirectVerification: DateDirectVerification, DateEndVerification: DateEndVerification, CommentsVerification: CommentsVerification
-                    }, async: false
+                        DateTakeVerification: DateTakeVerification, DateDirectVerification: DateDirectVerification, DateEndVerification: DateEndVerification, CommentsVerification: CommentsVerification, DateOfExpert: DateOfExpert, SignatoriesId: SignatoriesId
+                    }
                 });
 
 

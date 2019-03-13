@@ -1,7 +1,6 @@
 ﻿$(document).ready(function () {
    
     $(".user").click(function () {
-
         var fullName = $(this).children(".FullName").text().split(" ");
         var Tel = $(this).children(".Tel").text();
         var Email = $(this).children(".Email").text();
@@ -18,14 +17,13 @@
         $("#editUser").dialog();
     });
 
-    $("#DeleteUser").click(
+    $("#DeleteUser,#DeleteCounterparty").click(
         function () {
             var Id = $(this).parent().children("input[name='Id']").val();
             var ans = confirm("Видалити користувача? Після цієї операції він не увійде в систему.");
-            if (ans == false) {
+            if (ans === false) {
                 return false;
             }
-          
             $.post("/Employees/DeleteUser", { Id: Id }).done(
                 function (data) {
                     alert("Користувача: " + data + " було видалено.");
@@ -34,5 +32,23 @@
             );
         }
     );
+    $(".counterparty").click(function () {
+        var fullName = $(this).children(".FullName").text().split(" ");
+        var Tel = $(this).children(".Tel").text();
+        var Email = $(this).children(".Email").text();
+        var Id = $(this).children("input[name='Id']").val();
+
+        $("#editCounterparty").find("input[name='LastName']").val(fullName[0]);
+        $("#editCounterparty").find("input[name='FirstName']").val(fullName[1]);
+        $("#editCounterparty").find("input[name='MiddleName']").val(fullName[2]);
+
+        $("#editCounterparty").find("input[name='Email']").val(Email);
+        $("#editCounterparty").find("input[name='Tel']").val(Tel);
+        $("#editCounterparty").find("input[name='Id']").val(Id);
+
+        $("#editCounterparty").dialog();
+    });
+
+    
 });
 

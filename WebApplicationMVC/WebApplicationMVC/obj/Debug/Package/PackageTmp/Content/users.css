@@ -1,14 +1,16 @@
-﻿
-.user
-{
-    border:1px solid gray;
-    padding:6px;
-    margin-top:3px;
-    border-radius:4px;
-    cursor:pointer;
-    transition:all 0.3s;
+﻿.container {
+    padding-top: 5px;
 }
-.user:hover{
-    background-color:lightslategray;
-    color:white;
+.user, .counterparty {
+    border: 1px solid gray;
+    padding: 6px;
+    margin-top: 3px;
+
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.user:hover, .counterparty:hover{
+    background-color: lightslategray;
+    color: white;
 }

@@ -1,7 +1,48 @@
 ﻿$(
     function () {
 
-        $("#accordConfig").accordion();
+        $("#accordConfig").accordion({ heightStyle: "content" });
+
+        $(".Agent").click(function () {
+
+            $(this).parent().find(".CounterpartySettings").slideToggle();
+            $(this).parent().find(".CounterpartySettingsIntro").accordion({ heightStyle: "content" });
+     
+        });
+        $(".ChangeSettings").click(function () {
+
+            var counterpartyId = $(this).parent().parent().parent().data("id");
+            var analytics = new Array();
+            $(this).parent().parent().find("input[name='AnalyticTypes']:checked").each(function () {
+                analytics.push($(this).val());
+            });
+
+            var performers = new Array();
+            $(this).parent().parent().find("input[name='Manager']:checked").each(function () {
+                performers.push($(this).val());
+            });
+
+            var sources = new Array();
+            $(this).parent().parent().find("input[name='Source']:checked").each(function () {
+                sources.push($(this).val());
+            });
+            
+            var model = { counterpartyId: counterpartyId, analytics: analytics, performers: performers, sources: sources };
+            $.ajax({
+                url: "/Config/ChangeSettingsCounterparty",
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(model),
+                success: function (result) {
+                    alert(result);
+                },
+                error: function (result) {
+                    alert(result.responseText);
+                }
+            });
+                
+        });
+
 
         $(".ObjMeta").delegate(".DelDesk", "click", function () {
             var res = confirm("Увага! Після видалення атрибуту,всі записи пов'язані з цим атрибутом будуть видалені!");
@@ -79,7 +120,7 @@
                 var SourceId = $("#SourceId :selected").val();
                 var BranchName = $(".BranchName").val();
                 var SourceName = $('#SourceId :selected').text();
-                $.post("/Config/AddBranch", { SourceId: SourceId, BranchName, BranchName }).done(function (data) {
+                $.post("/Config/AddBranch", { SourceId: SourceId, BranchName: BranchName }).done(function (data) {
                     $(".BranchArr").append(`
                     <div class="Branch row" data-id="${data}">
                 <div class="col-md-5">${SourceName}</div>

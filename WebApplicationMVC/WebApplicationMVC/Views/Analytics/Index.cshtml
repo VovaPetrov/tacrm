@@ -46,10 +46,23 @@
                 <br />
                 <h5>Вибрати тип аналітики</h5>
                 <select name="TypeId" class="form-control">
-                    <option selected="selected" value="0">Вся інформація</option>
+
                     @foreach (var type in ViewBag.Types)
                     {
                         <option value="@type.Id">@type.TypeName</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <br />
+                <h5>Вибрати контрагента</h5>
+                <select name="CounterpartyId" class="form-control">
+                    <option value="0">Не вибрано</option>
+                    @foreach (var counterparty in ViewBag.Counterparties)
+                    {
+                    <option value="@counterparty.Id">@counterparty.LastName @counterparty.FirstName @counterparty.MiddleName</option>
                     }
                 </select>
             </div>

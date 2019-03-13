@@ -1,18 +1,18 @@
 ﻿@using WebApplicationMVC.Models;
+@using System.Collections.Generic;
+@using System.Linq;
 @{
     ViewBag.Title = "Конфігурація даних";
     var db = new ApplicationDbContext();
 }
 <div id="DeskObj" style="display:none">
     <span id="ObjName"></span>
-    <input type="hidden" id="ObjId"/>
+    <input type="hidden" id="ObjId" />
     <hr />
-    <table class="ObjMeta">
-
-    </table>
+    <table class="ObjMeta"></table>
     <hr />
     <span style="font-size:0.9em">Додати атрибут</span>
-    <div><input type="text" placeholder="Назва атрибуту" name="NewAtrr" /><button type="button" id="AddAtrr" >Додати</button></div>
+    <div><input type="text" placeholder="Назва атрибуту" name="NewAtrr" /><button type="button" id="AddAtrr">Додати</button></div>
     <hr />
     <button class="btn btn-primary" type="button" id="saveDesk">Зберегти</button>
 </div>
@@ -121,14 +121,14 @@
                             int SId = branch.SourceId;
                             string SourceName = db.Sources.Where(e => e.Id == SId).FirstOrDefault().SourceName;
                             @SourceName
-                    }
+                        }
+                    </div>
+                    <div class="col-md-5">@branch.BranchName</div>
+                    <div class="col-md-2 DelBranch">
+                        <i class="fas fa-times"></i>
+                    </div>
                 </div>
-                <div class="col-md-5">@branch.BranchName</div>
-                <div class="col-md-2 DelBranch">
-                    <i class="fas fa-times"></i>
-                </div>
-            </div>
-        }
+            }
         </div>
         <div class="row" style="margin-top:6px;">
             <div class="col-md-4">
@@ -147,9 +147,59 @@
             </div>
         </div>
     </div>
+    <h3>Контрагенти</h3>
+    <div>
+        <div class="container CounterpartyArr">
+            @foreach (var item in ViewBag.Counterparties)
+            {
+                <div data-id="@item.Counterparty.Id">
+                    <div class="Agent">
+                        @item.Counterparty.LastName @item.Counterparty.FirstName @item.Counterparty.MiddleName
+                    </div>
+                    <div class="CounterpartySettings" style="display:none">
+                        <div class="CounterpartySettingsIntro">
+                            <h5>Типи аналітики</h5>
+                            <div class="container AnalyticsTypes">
+                                @foreach (var type in ViewBag.Types)
+                                {
+                                    <input type="checkbox" name="AnalyticTypes" value="@type.Id"
+                                           @if (item.AnalyticsId.Contains(type.Id)) { @: checked
+                                           }> @type.TypeName <br />
+                                    }
+                            </div>
+                            <h5>Доступні виконавці</h5>
+                            <div class="container Performers PerformersArr">
+                                @foreach (var type in ViewBag.Managers)
+                                {
+                                    var fullName = type.LastName + " " + type.FirstName + " " + type.MiddleName;
+                                    <input type="checkbox" name="Manager" value="@type.Id"
+                                           @if (item.PerformersId.Contains(type.Id)) { @: checked
+                                           }> @fullName <br />
+                                    }
+                            </div>
+                            <h5>Доступні джерела</h5>
+                            <div class="container Sources SourceArr">
+                                @foreach (var type in ViewBag.Source)
+                                {
+                                    <input type="checkbox" name="Source" value="@type.Id"
+                                           @if (item.SourcesId.Contains(type.Id)) { @: checked
+                                           }> @type.SourceName <br />
+                                    }
+                            </div>
+                        </div>
+                        <br />
+                        <div class="col-md-2">
+                            <button class="btn btn-primary ChangeSettings" type="button">Змінити</button>
+                        </div>
+                    </div>
+
+                </div>
+            }
+        </div>
+    </div>
 </div>
 
 @section Config{
-        <link rel="stylesheet" href="~/Content/config.css" />
-        <script src="~/Content/config.js"></script>
+    <link rel="stylesheet" href="~/Content/config.css" />
+    <script src="~/Content/config.js"></script>
 }

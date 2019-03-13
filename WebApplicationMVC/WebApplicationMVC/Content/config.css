@@ -15,7 +15,22 @@
     color:red;
     cursor:pointer;
 }
-.SourceArr,.BranchArr{
-    height:300px;
-    overflow-y:scroll;
+.SourceArr, .BranchArr, .PerformersArr {
+    height: 300px;
+    overflow-y: scroll;
+}
+.CounterpartySettings {
+    margin-top: 3px;
+    padding: 3px;
+}
+.Agent {
+    border: 1px solid gray;
+    padding: 2px;
+    cursor: pointer;
+    border-radius: 2px;
+    margin: 3px;
+    padding: 2px;
+}
+.Agent:hover{
+    background-color:#e1d9d9;
 }

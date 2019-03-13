@@ -13,22 +13,16 @@ using WebApplicationMVC.Models;
 
 namespace WebApplicationMVC.Controllers
 {
-   
     public class AccountController : Controller
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
-
-        public AccountController()
-        {
-        }
-
+        public AccountController() { }
         public AccountController(ApplicationUserManager userManager, ApplicationSignInManager signInManager)
         {
             UserManager = userManager;
             SignInManager = signInManager;
         }
-
         public ApplicationSignInManager SignInManager
         {
             get
@@ -40,7 +34,6 @@ namespace WebApplicationMVC.Controllers
                 _signInManager = value;
             }
         }
-
         public ApplicationUserManager UserManager
         {
             get
@@ -52,7 +45,6 @@ namespace WebApplicationMVC.Controllers
                 _userManager = value;
             }
         }
-
         //
         // GET: /Account/Login
         [AllowAnonymous]
@@ -61,7 +53,6 @@ namespace WebApplicationMVC.Controllers
             ViewBag.ReturnUrl = returnUrl;
             return View();
         }
-
         //
         // POST: /Account/Login
         [HttpPost]
@@ -69,8 +60,6 @@ namespace WebApplicationMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Login(LoginViewModel model, string returnUrl)
         {
-
-
             if (!ModelState.IsValid)
             {
                 return View(model);
@@ -79,21 +68,19 @@ namespace WebApplicationMVC.Controllers
             var user = db.Users.Where(e => e.UserName == model.Email).FirstOrDefault();
             if (user.EmailConfirmed == false)
             {
-
                 ModelState.AddModelError("", "Ваш аккаунт ще не створений або заблокований.");
                 return View(model);
             }
-            // Сбои при входе не приводят к блокированию учетной записи
-            // Чтобы ошибки при вводе пароля инициировали блокирование учетной записи, замените на shouldLockout: true
             var result = await SignInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, shouldLockout: false);
-
-
-
-
             switch (result)
             {
                 case SignInStatus.Success:
-                    return RedirectToLocal(returnUrl);
+                    var roleId = user.Roles.FirstOrDefault().RoleId;
+                    var role = db.Roles.FirstOrDefault(e => e.Id == roleId);
+                    if (role.Name == "Counterparty")
+                        return new RedirectResult("/AnalyticsCounterparty/Index");
+                    else
+                        return RedirectToLocal(returnUrl);
                 case SignInStatus.LockedOut:
                     return View("Lockout");
                 case SignInStatus.RequiresVerification:
@@ -166,29 +153,36 @@ namespace WebApplicationMVC.Controllers
             
             if (ModelState.IsValid)
             {
-                var user = new ApplicationUser { UserName = model.Email, EmailConfirmed=true, FirstName = model.FirstName, LastName = model.LastName, MiddleName = model.MiddleName, Tel = model.Tel, Email = model.Email , };
+                var user = new ApplicationUser { UserName = model.Email, EmailConfirmed=true, FirstName = model.FirstName, LastName = model.LastName, MiddleName = model.MiddleName, Tel = model.Tel, Email = model.Email  };
                
                 var result = await UserManager.CreateAsync(user, model.Password);
 
-                var context = new ApplicationDbContext();
-                var roleStore = new RoleStore<IdentityRole>(context);
-                var roleManager = new RoleManager<IdentityRole>(roleStore);
-
-                var userStore = new UserStore<ApplicationUser>(context);
-                var userManager = new UserManager<ApplicationUser>(userStore);
                 var db = new ApplicationDbContext();
-                System.Diagnostics.Debug.WriteLine(user.Id);
-                userManager.AddToRole(user.Id, "Manager");
-
-                Contact contact = new Contact() { FirstName = user.FirstName , LastName = user.LastName, MiddleName = user.MiddleName, Email = user.Email, Tel = user.Tel , Company = "ТА-ЕКСПЕРТ-СЕРВІС", Position = "Менеджер"};
+                var roleStore = new RoleStore<IdentityRole>(db);
+                var roleManager = new RoleManager<IdentityRole>(roleStore);
                
+                var userStore = new UserStore<ApplicationUser>(db);
+                var userManager = new UserManager<ApplicationUser>(userStore);
+
+                Contact contact = new Contact() { FirstName = user.FirstName, LastName = user.LastName, MiddleName = user.MiddleName, Email = user.Email, Tel = user.Tel };
+
+                if (model.IsCounterparty)
+                {
+                    userManager.AddToRole(user.Id, "Counterparty");
+                    contact.Position = "Контрагент";
+                }
+                else
+                {
+                    userManager.AddToRole(user.Id, "Manager");
+                    contact.Company = "ТА-ЕКСПЕРТ-СЕРВІС";
+                    contact.Position = "Менеджер";
+                }
+
                 db.Contacts.Add(contact);
                 db.SaveChanges();
 
                 if (result.Succeeded)
                 {
-                    
-                    
                     await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
                     
                     // Дополнительные сведения о включении подтверждения учетной записи и сброса пароля см. на странице https://go.microsoft.com/fwlink/?LinkID=320771.
@@ -196,16 +190,15 @@ namespace WebApplicationMVC.Controllers
                     // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
                     // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
                     // await UserManager.SendEmailAsync(user.Id, "Подтверждение учетной записи", "Подтвердите вашу учетную запись, щелкнув <a href=\"" + callbackUrl + "\">здесь</a>");
-
+                    if(model.IsCounterparty)
+                        return new RedirectResult("/AnalyticsCounterparty/Index");
                     return RedirectToAction("Index", "Home");
                 }
                 AddErrors(result);
             }
-
             // Появление этого сообщения означает наличие ошибки; повторное отображение формы
             return View(model);
         }
-
         //
         // GET: /Account/ConfirmEmail
         [AllowAnonymous]

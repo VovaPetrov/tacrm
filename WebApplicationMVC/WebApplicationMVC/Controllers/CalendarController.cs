@@ -17,7 +17,7 @@ using Microsoft.AspNet.Identity;
 
 namespace WebApplicationMVC.Controllers
 {
-    [Authorize]
+    [Authorize(Roles ="Admin,Manager")]
     public class CalendarController : Controller
     {
         CalendarService service = null;

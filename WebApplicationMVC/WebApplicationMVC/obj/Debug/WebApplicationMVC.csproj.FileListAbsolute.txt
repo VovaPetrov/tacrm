@@ -260,3 +260,10 @@ D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.
 D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.csproj.CopyComplete
 D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.dll
 D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.pdb
+D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.Migrations.AddedCounterpartiesfutures.resources
+D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.Migrations.AddedCounterpartiesIdtoOrder.resources
+D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.Migrations.AddedSignatoriesIdtoOrder.resources
+D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.Migrations.AddedSignatoriesIdtoOrder2.resources
+D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.Migrations.AddedSignatoriesIdtoOrder3.resources
+D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.Migrations.AddedSignatoriesIdtoOrderfinal.resources
+D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.Migrations.Addedcounterpartyentities.resources

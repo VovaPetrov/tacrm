@@ -5,6 +5,7 @@
 }
 
     <div class="row">
+        
         <div class="col-md-6">
             <h6>Пошук замовлень</h6>
             <form method="get" action="/Order/Search">
@@ -88,7 +89,7 @@
                     @FullName
                 </td>
                 <td>
-                    @order.CreatedDate
+                    @order.CreatedDate.ToString("dd.MM.yyyy HH:mm")
                 </td>
                 <td>Замовлення: @order.Name</td>
                 <td>

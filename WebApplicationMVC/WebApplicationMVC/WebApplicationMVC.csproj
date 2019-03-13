@@ -312,6 +312,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\AnalyticsController.cs" />
+    <Compile Include="Controllers\AnalyticsCounterpartyController.cs" />
     <Compile Include="Controllers\CalendarController.cs" />
     <Compile Include="Controllers\ConfigController.cs" />
     <Compile Include="Controllers\EmployeesController.cs" />
@@ -319,6 +320,7 @@
     <Compile Include="Controllers\ManageController.cs" />
     <Compile Include="Controllers\MissionsController.cs" />
     <Compile Include="Controllers\OrderController.cs" />
+    <Compile Include="Data\ApplicationDbContext.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -342,10 +344,42 @@
     <Compile Include="Migrations\201901071645020_Added Date of expert.Designer.cs">
       <DependentUpon>201901071645020_Added Date of expert.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201903090938402_Added Counterparties futures.cs" />
+    <Compile Include="Migrations\201903090938402_Added Counterparties futures.Designer.cs">
+      <DependentUpon>201903090938402_Added Counterparties futures.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903100806558_Added CounterpartiesId to Order.cs" />
+    <Compile Include="Migrations\201903100806558_Added CounterpartiesId to Order.Designer.cs">
+      <DependentUpon>201903100806558_Added CounterpartiesId to Order.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903101147217_Added SignatoriesId to Order.cs" />
+    <Compile Include="Migrations\201903101147217_Added SignatoriesId to Order.Designer.cs">
+      <DependentUpon>201903101147217_Added SignatoriesId to Order.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903101157161_Added SignatoriesId to Order 2.cs" />
+    <Compile Include="Migrations\201903101157161_Added SignatoriesId to Order 2.Designer.cs">
+      <DependentUpon>201903101157161_Added SignatoriesId to Order 2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903101203093_Added SignatoriesId to Order 3.cs" />
+    <Compile Include="Migrations\201903101203093_Added SignatoriesId to Order 3.Designer.cs">
+      <DependentUpon>201903101203093_Added SignatoriesId to Order 3.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903101205517_Added SignatoriesId to Order final.cs" />
+    <Compile Include="Migrations\201903101205517_Added SignatoriesId to Order final.Designer.cs">
+      <DependentUpon>201903101205517_Added SignatoriesId to Order final.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903111423336_Added counterparty entities.cs" />
+    <Compile Include="Migrations\201903111423336_Added counterparty entities.Designer.cs">
+      <DependentUpon>201903111423336_Added counterparty entities.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\AnalyticsModel.cs" />
     <Compile Include="Models\CalendarModel.cs" />
+    <Compile Include="Models\Counterparty\CounterpartyDTO.cs" />
+    <Compile Include="Models\Order\OrderDTO.cs" />
+    <Compile Include="Models\Users\EditCounterpartyModel.cs" />
+    <Compile Include="Models\Users\EmployeesViewModel.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\Translate.cs" />
@@ -603,7 +637,6 @@
     <Content Include="Scripts\jquery.validate.unobtrusive.min.js" />
     <Content Include="Scripts\main.js" />
     <Content Include="Scripts\Mission.js" />
-    <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\Orders.js" />
     <Content Include="Scripts\users.js" />
     <Content Include="Web.config" />
@@ -644,10 +677,13 @@
     <Content Include="Views\Order\Add.cshtml" />
     <Content Include="Views\Config\Index.cshtml" />
     <Content Include="Views\Analytics\Index.cshtml" />
+    <Content Include="Views\AnalyticsCounterparty\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Content\Upload\" />
     <Folder Include="Content\zips\" />
+    <Folder Include="Models\Config\" />
+    <Folder Include="Repositories\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />
@@ -677,6 +713,27 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201901071645020_Added Date of expert.resx">
       <DependentUpon>201901071645020_Added Date of expert.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903090938402_Added Counterparties futures.resx">
+      <DependentUpon>201903090938402_Added Counterparties futures.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903100806558_Added CounterpartiesId to Order.resx">
+      <DependentUpon>201903100806558_Added CounterpartiesId to Order.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903101147217_Added SignatoriesId to Order.resx">
+      <DependentUpon>201903101147217_Added SignatoriesId to Order.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903101157161_Added SignatoriesId to Order 2.resx">
+      <DependentUpon>201903101157161_Added SignatoriesId to Order 2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903101203093_Added SignatoriesId to Order 3.resx">
+      <DependentUpon>201903101203093_Added SignatoriesId to Order 3.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903101205517_Added SignatoriesId to Order final.resx">
+      <DependentUpon>201903101205517_Added SignatoriesId to Order final.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903111423336_Added counterparty entities.resx">
+      <DependentUpon>201903111423336_Added counterparty entities.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

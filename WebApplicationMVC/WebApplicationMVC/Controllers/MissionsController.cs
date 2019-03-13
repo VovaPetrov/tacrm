@@ -7,7 +7,7 @@ using WebApplicationMVC.Models;
 using Microsoft.AspNet.Identity;
 namespace WebApplicationMVC.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin,Manager")]
     public class MissionsController : Controller
     {
         // GET: Missions

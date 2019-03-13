@@ -84,6 +84,8 @@ namespace WebApplicationMVC.Models
         [Required]
         [Display(Name = "Телефон")]
         public string Tel { get; set; }
+        [Display(Name ="Зовнішній контрагент")]
+        public bool IsCounterparty { get; set; }
 
         [Required]
         [StringLength(100, ErrorMessage = "Значення {0} повино містити не менше {2} символів.", MinimumLength = 6)]

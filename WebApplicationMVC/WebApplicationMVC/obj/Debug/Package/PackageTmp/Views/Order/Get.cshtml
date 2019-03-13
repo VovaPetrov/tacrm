@@ -5,13 +5,19 @@
     ViewBag.Title = "Add";
     var Id = User.Identity.GetUserId();
     var db = new ApplicationDbContext();
-    var users = db.Users.ToList();
+
 }
 
 <div class="container">
     <div class="row">
         <div class="col-md-3">
             <h3>Договір №@Model.Name</h3>
+        </div>
+        <div class="col-md-2">
+            <form method="get" action="/Order/CreateCopy">
+                <input type="hidden" name="OrderId" value="@ViewBag.Id" />
+                <button class="btn btn-primary" type="submit" id="createCopy">Стоворити копію</button>
+            </form>
         </div>
         <div class="col-md-2">
             <form method="get" action="/Order/GetAccount">
@@ -25,7 +31,7 @@
                 <button class="btn btn-primary" type="submit" id="getContract"><i class="fas fa-print"></i> Договір</button>
             </form>
         </div>
-        <div class="col-md-2">
+        <div class="col-md-1">
             <form method="get" action="/Order/GetAct">
                 <input type="hidden" name="orderId" value="@ViewBag.Id" />
                 <button class="btn btn-primary" type="submit" id="getAct"><i class="fas fa-print"></i> Акт</button>
@@ -53,7 +59,7 @@
                 <div class="form-group col-md-5">
                     <label for="metaSelect">Мета оцінки</label>
                     <select class="form-control" id="metaSelect" name="MetaId">
-                   <option>Не вибрано</option>
+                        <option>Не вибрано</option>
                         @foreach (var meta in ViewBag.Meta)
                         {
 
@@ -95,10 +101,12 @@
                     </select>
                 </div>
                 <div class="form-group col-md-4">
-                    <label for="branchSelect">Філія</label>
+                    <label for="branchSelect">Філія Джерела</label>
                     <select class="form-control" id="branchSelect" name="BranchId">
-                        <option @if (ViewBag.BranchId == null) { @:selected="selected"
-                                }>Не вибрано</option>
+                        <option @if (ViewBag.BranchId == null) { @: selected="selected"
+                                }>
+                            Не вибрано
+                        </option>
                         @foreach (var branch in ViewBag.Branches)
                         {
                             <option value="@branch.Id" @if (ViewBag.BranchId != null) { if (branch.Id == ViewBag.BranchId) { @: selected="selected"
@@ -111,19 +119,55 @@
 
             </div>
         </div>
+        <div class="container">
+            <div class="row">
+                <div class="form-group col-md-4">
+                    <label for="counterpartySelect">Контрагент (звітність)</label>
+                    <select class="form-control" id="counterpartySelect" name="CounterpartyId">
+                        <option value="">Не вибрано</option>
+                        @foreach (var counterparty in ViewBag.Counterparties)
+                        {
+                            string fullName = $"{counterparty.LastName}  {counterparty.FirstName} {counterparty.MiddleName}";
+                            <option value="@counterparty.Id" @if (counterparty.Id == ViewBag.CounterpartyId) { @: selected
+                                    }>
+                                @fullName
+                                </option>
+                            }
+                    </select>
+                </div>
+                <div class="form-group col-md-4">
+                    <label>Дата передачі Звіту Замовнику</label>
+                    <input type="date" name="DateOfTransfer" class="form-control" value="@if(Model.DateOfTransfer.HasValue){@Model.DateOfTransfer.Value.ToString("yyyy-MM-dd")}" />
+                </div>
+            </div>
+        </div>
 
         <div class="container">
-            <h5>Виконавці</h5>
-            <div class="form-group col-md-4">
-                @foreach (var user in users)
-                {
-                    string fullName = $"{user.LastName}  {user.FirstName} {user.MiddleName}";
+            <div class="row">
+                <div class="form-group col-md-4">
+                    <h5>Виконавці</h5>
+                    @foreach (var user in ViewBag.Managers)
+                    {
+                        string fullName = $"{user.LastName}  {user.FirstName} {user.MiddleName}";
 
-                    <input type="checkbox" value="@user.Id" name="UserId" @if (ViewBag.Users.Contains(user.Id)) { @: checked
-                           } /> @fullName <br />
+                        <input type="checkbox" value="@user.Id" name="UserId" @if (ViewBag.Users.Contains(user.Id)) { @: checked
+                               } /> @fullName <br />
 
-                    }
+                        }
+                </div>
+                <div class="form-group col-md-4">
+                    <h5>Підписанти</h5>
+                    @foreach (var user in ViewBag.Managers)
+                    {
+                        string fullName = $"{user.LastName}  {user.FirstName} {user.MiddleName}";
+
+                        <input type="checkbox" value="@user.Id" name="SignatoryId" @if (ViewBag.Signatories.Contains(user.Id)) { @: checked
+                               } /> @fullName <br />
+
+                        }
+                </div>
             </div>
+           
         </div>
         <div class="container">
 
@@ -289,7 +333,7 @@
                 }
                 else
                 {
-                    <div class="col-md-3">           
+                    <div class="col-md-3">
                         <div class="form-group">
                             <label> Наявність оплати</label>
                             @if (ViewBag.IsPaidOverWatch != null && (bool)ViewBag.IsPaidOverWatch == true)
@@ -312,6 +356,10 @@
             <h5>Верифікація</h5>
             <div class="row">
                 <div class="col-md-4 form-group">
+                    <label>Дата оцінки</label>
+                    <input type="date" name="DateOfExpert" class="form-control" value="@if(Model.DateOfExpert.HasValue){@Model.DateOfExpert.Value.ToString("yyyy-MM-dd")}" />
+                </div>
+                <div class="col-md-4 form-group">
                     <label>Дата прийняття на верифікацію</label>
                     <input type="date" name="DateTakeVerification" value="@if(Model.DateOfTakeVerification.HasValue){@Model.DateOfTakeVerification.Value.ToString("yyyy-MM-dd")}" class="form-control" />
                 </div>
@@ -332,10 +380,6 @@
         <div class="container">
             <h5>Передача Звіту Замовнику</h5>
             <div class="row">
-                <div class="col-md-4 form-group">
-                    <label>Дата передачі Звіту Замовнику</label>
-                    <input type="date" name="DateOfTransfer" class="form-control" value="@if(Model.DateOfTransfer.HasValue){@Model.DateOfTransfer.Value.ToString("yyyy-MM-dd")}" />
-                </div>
                 <div class="col-md-4 form-group">
                     <label>Коментар</label>
                     <input type="text" name="CommentsOfTransfer" class="form-control" value="@Model.CommentOfTransfer" />

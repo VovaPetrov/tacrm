@@ -1,19 +1,24 @@
-﻿using System;
+﻿using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Spreadsheet;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using WebApplicationMVC.Models;
-using System.Text;
-using System.IO;
-using DocumentFormat.OpenXml.Packaging;
-using DocumentFormat.OpenXml.Spreadsheet;
-using DocumentFormat.OpenXml;
 namespace WebApplicationMVC.Controllers
 {
     [Authorize(Roles = "Admin")]
     public class AnalyticsController : Controller
     {
+        ApplicationDbContext db;
+        public AnalyticsController()
+        {
+            db = new ApplicationDbContext();
+        }
         private string DateUkrFormat(DateTime dt)
         {
             string day = dt.Day <= 9 ? "0" + dt.Day : dt.Day + "";
@@ -23,18 +28,21 @@ namespace WebApplicationMVC.Controllers
         // GET: Analytics
         public ActionResult Index()
         {
-            var db = new ApplicationDbContext();
+           
             ViewBag.Sources = db.Sources.ToList();
-            ViewBag.Types = new AnalyticsModel().GetTypeReports();
+            ViewBag.Types = AnalyticsModel.GetTypeReports();
+
+            var CounterpartiesId = db.Roles.Where(e => e.Name == "Counterparty").FirstOrDefault().Users.Select(e => e.UserId);
+            var Counterparties = db.Users.Where(e => CounterpartiesId.Contains(e.Id)).ToList();
+            ViewBag.Counterparties = Counterparties;
             return View(db.Users.ToList());
         }
-        public byte[] GetReport(DateTime? date1, DateTime? date2, string Performers, int SourceId)
+        public byte[] GetReport(List<int> ordersIds)
         {
 
             string fileName =System.Web.HttpContext.Current.Server.MapPath("~/Content/word/Report.xlsx");
             byte[] textByteArray = System.IO.File.ReadAllBytes(fileName);
          
-            var db = new ApplicationDbContext();
             using (MemoryStream stream = new MemoryStream())
             {
                 stream.Write(textByteArray, 0, textByteArray.Length);
@@ -49,22 +57,8 @@ namespace WebApplicationMVC.Controllers
                    
                     WorksheetPart worksheetPart = document.WorkbookPart.WorksheetParts.FirstOrDefault();
                     const int startY = 3;
-                    var ordersIds = new List<int>();
-                    if (Performers == "1")
-                    {
-                        if (SourceId != -1)
-                            ordersIds = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && e.SourceId == SourceId).Select(e => e.Id).ToList();
-                        else
-                            ordersIds = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2).Select(e => e.Id).ToList();
-                    }
-                    else
-                    {
-                        var perfomers = db.Performerses.Where(e => e.UserId.Contains(Performers)).Select(e => e.OrderId).ToList();
-                        if (SourceId != -1)
-                            ordersIds = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && perfomers.Contains(e.Id) && e.SourceId == SourceId).Select(e => e.Id).ToList();
-                        else
-                            ordersIds = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && perfomers.Contains(e.Id)).Select(e => e.Id).ToList();
-                    }
+                    
+
                     var objects = db.ObjectLists.Where(e => ordersIds.Contains(e.OrderId)).ToList();
                    
                         for (int i = 0; i < objects.Count; i++)
@@ -398,11 +392,11 @@ namespace WebApplicationMVC.Controllers
             
         }
         
-        public byte[] GetReportKredo(DateTime? date1, DateTime? date2, string Performers, int SourceId)
+        public byte[] GetReportKredo(List<int> ordersIds)
         {
             string fileName = Path.Combine(HttpRuntime.AppDomainAppPath, "Content/word/Kredo.xlsx");
             byte[] textByteArray = System.IO.File.ReadAllBytes(fileName);
-            var db = new ApplicationDbContext();
+
             using (MemoryStream stream = new MemoryStream())
             {
                 stream.Write(textByteArray, 0, textByteArray.Length);
@@ -417,22 +411,7 @@ namespace WebApplicationMVC.Controllers
 
                     WorksheetPart worksheetPart = document.WorkbookPart.WorksheetParts.FirstOrDefault();
                     const int startY = 2;
-                    var ordersIds = new List<int>();
-                    if (Performers == "1")
-                    {
-                        if (SourceId != -1)
-                            ordersIds = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && e.SourceId == SourceId).Select(e => e.Id).ToList();
-                        else
-                            ordersIds = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2).Select(e => e.Id).ToList();
-                    }
-                    else
-                    {
-                        var perfomers = db.Performerses.Where(e => e.UserId.Contains(Performers)).Select(e => e.OrderId).ToList();
-                        if (SourceId != -1)
-                            ordersIds = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && perfomers.Contains(e.Id) && e.SourceId == SourceId).Select(e => e.Id).ToList();
-                        else
-                            ordersIds = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && perfomers.Contains(e.Id)).Select(e => e.Id).ToList();
-                    }
+                    
                     //var objects = db.ObjectLists.Where(e => ordersIds.Contains(e.OrderId)).ToList();
                     Cell cell;
                     for (int i = 0; i < ordersIds.Count; i++) {
@@ -479,7 +458,7 @@ namespace WebApplicationMVC.Controllers
             }
 
         }
-        public byte[] GetReportNotarius(DateTime? date1, DateTime? date2, string Performers, int SourceId)
+        public byte[] GetReportNotarius(List<int> ordersIds)
         {
             string fileName = Path.Combine(HttpRuntime.AppDomainAppPath, "Content/word/notarius.xlsx");
             byte[] textByteArray = System.IO.File.ReadAllBytes(fileName);
@@ -497,22 +476,7 @@ namespace WebApplicationMVC.Controllers
 
                     WorksheetPart worksheetPart = document.WorkbookPart.WorksheetParts.FirstOrDefault();
                     const int startY = 2;
-                    var ordersIds = new List<int>();
-                    if (Performers == "1")
-                    {
-                        if(SourceId!=-1)
-                        ordersIds = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && e.SourceId==SourceId).Select(e => e.Id).ToList();
-                        else
-                        ordersIds = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2).Select(e => e.Id).ToList();
-                    }
-                    else
-                    {
-                        var perfomers = db.Performerses.Where(e => e.UserId.Contains(Performers)).Select(e => e.OrderId).ToList();
-                        if(SourceId!=-1)
-                        ordersIds = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && perfomers.Contains(e.Id) && e.SourceId == SourceId).Select(e => e.Id).ToList();
-                        else
-                        ordersIds = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && perfomers.Contains(e.Id)).Select(e => e.Id).ToList();
-                    }
+                   
                     var objects = db.ObjectLists.Where(e => ordersIds.Contains(e.OrderId)).ToList();
                     Cell cell;
                     for (int i = 0; i < objects.Count; i++)
@@ -621,16 +585,11 @@ namespace WebApplicationMVC.Controllers
             }
         }
 
-        public byte[] GetReportUkrGas(DateTime? date1, DateTime? date2, string Performers,int SourceId) {
-            string fileName = "";
-            try
-            {
-                fileName = Server.MapPath("~/Content/word/Звіт.xlsx");
-
-            }
-            catch{
-                fileName= "~/Content/word/Звіт.xlsx";
-            }
+        public byte[] GetReportUkrGas(List<int> ordersIds)
+        {
+   
+            string fileName = Path.Combine(HttpRuntime.AppDomainAppPath, "Content/word/Звіт.xlsx");
+            
             byte[] textByteArray = System.IO.File.ReadAllBytes(fileName);
             var db = new ApplicationDbContext();
             using (MemoryStream stream = new MemoryStream())
@@ -647,22 +606,7 @@ namespace WebApplicationMVC.Controllers
 
                     WorksheetPart worksheetPart = document.WorkbookPart.WorksheetParts.FirstOrDefault();
                     const int startY = 4;
-                    var ordersIds = new List<int>();
-                    if (Performers == "1")
-                    {
-                        if(SourceId!=-1)
-                        ordersIds = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && e.SourceId==SourceId).Select(e => e.Id).ToList();
-                        else
-                        ordersIds = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2).Select(e => e.Id).ToList();
-                    }
-                    else
-                    {
-                        var perfomers = db.Performerses.Where(e => e.UserId.Contains(Performers)).Select(e => e.OrderId).ToList();
-                        if(SourceId!=-1)
-                        ordersIds = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && perfomers.Contains(e.Id) && e.SourceId == SourceId).Select(e => e.Id).ToList();
-                        else
-                        ordersIds = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && perfomers.Contains(e.Id)).Select(e => e.Id).ToList();
-                    }
+                    
                     var objects = db.ObjectLists.Where(e => ordersIds.Contains(e.OrderId)).ToList();
 
                     for (int i = 0; i < objects.Count; i++)
@@ -842,16 +786,27 @@ namespace WebApplicationMVC.Controllers
                         if (order.OverWatch.HasValue)                  
                             cell.CellValue = new CellValue(DateUkrFormat(order.OverWatch.Value));
                         cell.DataType = new EnumValue<CellValues>(CellValues.String);
+
+                        DateTime dateTakeToWork;
+                        List<DateTime> dates = new List<DateTime>();
+                        if (order.DateOfPay.HasValue)
+                            dates.Add(order.DateOfPay.Value);
+                        if (order.OverWatch.HasValue)
+                            dates.Add(order.OverWatch.Value);
+                        if (order.CreatedDate.HasValue)
+                            dates.Add(order.CreatedDate.Value);
+
+                        dateTakeToWork = dates.Max();
                         
                         cell = InsertCellInWorksheet("W", startY + i, worksheetPart);
-                        cell.CellValue = new CellValue(DateUkrFormat(order.CreatedDate.Value));
+                        cell.CellValue = new CellValue(DateUkrFormat(dateTakeToWork));
                         cell.DataType = new EnumValue<CellValues>(CellValues.String);
 
-                        var permisions = db.Performerses.Where(e => e.OrderId == order.Id).ToList();
+                        var permisions = db.SignatoryOrders.Where(e => e.OrderId == order.Id).Select(e=>e.SignatoryId).ToList();
                         StringBuilder strUsers = new StringBuilder("");
-                        foreach (var user in permisions)
+                        foreach (var userId in permisions)
                         {
-                            var User = db.Users.Where(e => e.Id == user.UserId).FirstOrDefault();
+                            var User = db.Users.Where(e => e.Id == userId).FirstOrDefault();
                             strUsers.Append($"{User.LastName} {User.FirstName} {User.MiddleName}, ");
                         }
                         if(strUsers.Length>2)
@@ -916,7 +871,7 @@ namespace WebApplicationMVC.Controllers
                 return stream.ToArray();
             }
         }
-        public ActionResult GenerateReport(DateTime? date1, DateTime? date2, string Performers,int SourceId,int TypeId)
+        public ActionResult GenerateReport(DateTime? date1, DateTime? date2, string Performers,int SourceId,int TypeId,string CounterpartyId)
         {
             if (date1 > date2)
             {
@@ -926,19 +881,48 @@ namespace WebApplicationMVC.Controllers
             }
             date2 = date2.Value.AddDays(1);
             byte[] arr=new byte[0];
-            switch(TypeId)
+
+            
+            var ordersIds = new List<int>();
+            var orders = new List<Order>();
+            if (Performers == "1")
+            {
+                if (SourceId != -1)
+                    orders = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && e.SourceId == SourceId).ToList();
+                else
+                    orders = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2).ToList();
+            }
+            else
+            {
+                var perfomers = db.Performerses.Where(e => e.UserId.Contains(Performers)).Select(e => e.OrderId).ToList();
+                if (SourceId != -1)
+                    orders = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && perfomers.Contains(e.Id) && e.SourceId == SourceId).ToList();
+                else
+                    orders = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && perfomers.Contains(e.Id)).ToList();
+            }
+
+            if (CounterpartyId != "0")
+            {
+                ordersIds = orders.Where(e => e.CounterpartyId == CounterpartyId).Select(e => e.Id).ToList();
+            }
+            else
+            {
+                ordersIds = orders.Select(e => e.Id).ToList();
+            }
+
+            switch (TypeId)
             {
                 case 0:
-                    arr = GetReport(date1, date2, Performers, SourceId);
+                    arr = GetReport(ordersIds);
                     break;
                 case 1:
-                    arr = GetReportUkrGas(date1, date2, Performers, SourceId);
+                    arr = GetReportUkrGas(ordersIds);
                     break;
                 case 2:
-                    arr= GetReportKredo(date1, date2, Performers, SourceId);
+                    arr= GetReportKredo(ordersIds);
                     break;
                 case 3:
-                    arr = GetReportNotarius(date1, date2, Performers, SourceId);
+                    arr = GetReportNotarius(ordersIds);
                     break;
                 default:
                     return RedirectToAction("Index");

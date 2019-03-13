@@ -1,34 +1,59 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
+using System.Net;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using WebApplicationMVC.Models;
+using WebApplicationMVC.Models.Counterparty;
 
 namespace WebApplicationMVC.Controllers
 {
     [Authorize(Roles="Admin")]
     public class ConfigController : Controller
     {
+        ApplicationDbContext db;
+        public ConfigController()
+        {
+            db = new ApplicationDbContext();
+        }
         // GET: Config
         public ActionResult Index()
-        {
-            var db = new ApplicationDbContext();
+        {           
             var Objects = db.Objects.ToList();
             ViewBag.Objects = Objects;
+
             var Props = db.Propses.ToList();
             ViewBag.Props = Props;
+
             var Sources = db.Sources.ToList();
             ViewBag.Source = Sources;
+
             var Branches = db.Branches.ToList();
             ViewBag.Branches = Branches;
+
             var Metas = db.Metas.ToList();
             ViewBag.Metas = Metas;
+
+            var CounterpartiesId = db.Roles.Where(e => e.Name == "Counterparty").FirstOrDefault().Users.Select(e=>e.UserId);
+            var Counterparties = db.Users.Where(e => CounterpartiesId.Contains(e.Id)).ToList();
+            ViewBag.Counterparties = from n in Counterparties select new CounterpartyDTO {
+                Counterparty = n,
+                AnalyticsId = db.AnalyticsCounterparties.Where(e=>e.CounterpartyId==n.Id).Select(e=>e.AnalyticsId).ToList(),
+                SourcesId = db.SourceCounterparties.Where(e => e.CounterpartyId == n.Id).Select(e => e.SourceId).ToList(),
+                PerformersId = db.PerformerCounterparties.Where(e => e.CounterpartyId == n.Id).Select(e => e.PerformerId).ToList()
+            };
+
+            ViewBag.Types = AnalyticsModel.GetTypeReports();
+
+            var managersId = db.Roles.Where(e => e.Name == "Manager").FirstOrDefault().Users.Select(e => e.UserId);
+            var managers = db.Users.Where(e => managersId.Contains(e.Id)).ToArray();
+            ViewBag.Managers = managers;
+
             return View();
         }
         public ActionResult AddMeta(string Meta)
         {
-            var db = new ApplicationDbContext();
             var meta = new Meta();
             meta.Content = Meta;
             db.Metas.Add(meta);
@@ -37,7 +62,6 @@ namespace WebApplicationMVC.Controllers
         }
         public ActionResult AddBranch(int SourceId,string BranchName)
         {
-            var db = new ApplicationDbContext();
             Branch branch = new Branch() { BranchName=BranchName, SourceId=SourceId};
             db.Branches.Add(branch);
             db.SaveChanges();
@@ -45,7 +69,6 @@ namespace WebApplicationMVC.Controllers
         }
         public ActionResult DelMeta(int Id)
         {
-            var db = new ApplicationDbContext();
             var orders = db.Orders.Where(e => e.MetaId == Id).ToList();
             foreach (var ord in orders)
             {
@@ -58,7 +81,6 @@ namespace WebApplicationMVC.Controllers
         }
         public ActionResult DelBranch(int Id)
         {
-            var db = new ApplicationDbContext();
             var orders = db.Orders.Where(e => e.BranchId == Id).ToList();
             foreach(var ord in orders)
             {
@@ -71,7 +93,6 @@ namespace WebApplicationMVC.Controllers
         }
         public ActionResult DelSource(int Id)
         {
-            var db = new ApplicationDbContext();
             var branches = db.Branches.Where(e => e.SourceId == Id).ToList();
             var branchesId = db.Branches.Where(e => e.SourceId == Id).Select(e=>e.Id).ToList();
             var sources = db.Sources.Where(e => e.Id == Id).ToList();
@@ -88,7 +109,6 @@ namespace WebApplicationMVC.Controllers
         }
         public ActionResult AddSource(string SourceName)
         {
-            var db = new ApplicationDbContext();
             Source source = new Source() { SourceName = SourceName };
             db.Sources.Add(source);
             db.SaveChanges();
@@ -96,7 +116,6 @@ namespace WebApplicationMVC.Controllers
         }
         public ActionResult DelProp(int Id)
         {
-            var db = new ApplicationDbContext();
             var orders = db.Orders.Where(e => e.PropsId == Id).ToList();
             foreach(var ord in orders)
             {
@@ -109,7 +128,6 @@ namespace WebApplicationMVC.Controllers
         }
         public ActionResult AddProp(string text)
         {
-            var db = new ApplicationDbContext();
             Props props = new Props() { Content = text };
             db.Propses.Add(props);
             db.SaveChanges();
@@ -118,7 +136,6 @@ namespace WebApplicationMVC.Controllers
         [HttpPost]
         public ActionResult AddObjectType(string Name)
         {
-            var db = new ApplicationDbContext();
             ObjectType @object = new ObjectType() { Name = Name };
             db.Objects.Add(@object);
             db.SaveChanges();
@@ -127,7 +144,6 @@ namespace WebApplicationMVC.Controllers
         [HttpPost]
         public ActionResult DelObjectType(int Id)
         {
-            var db = new ApplicationDbContext();
             var obj = db.Objects.Where(e => e.Id == Id).FirstOrDefault();
 
             var objLists = db.ObjectLists.Where(e => e.ObjectId == obj.Id).ToList();
@@ -144,13 +160,11 @@ namespace WebApplicationMVC.Controllers
         }
         public JsonResult GetDesk(int Id)
         {
-            var db = new ApplicationDbContext();
             var result = db.ObjectDesces.Where(e => e.ObjectTypeId == Id).ToList();
             return Json(result,JsonRequestBehavior.AllowGet);
         }
         public ActionResult EditDesk(int? Obj, IEnumerable<int> DeskIds, IEnumerable<string> DeskNames)
         {
-            var db = new ApplicationDbContext();
             var DeskIdsArray = DeskIds.ToList();
             var DeskNamesArray = DeskNames.ToList();
             for (int i = 0; i < DeskIdsArray.Count; i++)
@@ -173,6 +187,72 @@ namespace WebApplicationMVC.Controllers
             db.ObjectDesces.RemoveRange(removeDesks);
             db.SaveChanges();
             return null;
+        }
+        
+        [HttpPost]
+        public async Task<ContentResult> ChangeSettingsCounterparty(string counterpartyId,int[] analytics,string[] performers,int[] sources)
+        {       
+            if(!ModelState.IsValid)
+            {
+                return Content("Виникла помилка");
+            }
+
+            try
+            {                
+                var counterparty = db.Users.SingleOrDefault(e => e.Id == counterpartyId);
+                if(counterparty==null)
+                {
+                    return Content("Не знайдено контрагента");
+                }               
+                var roleId = db.Roles.Single(e => e.Name == "Counterparty").Id;
+                if(counterparty.Roles.Where(e=>e.RoleId==roleId).Count()==0)
+                {
+                    return Content("Даний користувач не є контрагентом");
+                }
+
+                await ChangeAnalyticsCounterparty(counterpartyId, analytics);
+                await ChangePerformersCounterparty(counterpartyId, performers);
+                await ChangeSourcesCounterparty(counterpartyId, sources);
+
+                return Content("Налаштування контрагента змінено");
+            }
+            catch (Exception ex)
+            {
+                return Content("Виникла помилка");
+            }
+        }
+        private async Task ChangeSourcesCounterparty(string counterpartyId, int[] model)
+        {
+            var oldSetting = db.SourceCounterparties.Where(e => e.CounterpartyId == counterpartyId).ToList();
+            if (oldSetting != null)
+            {
+                db.SourceCounterparties.RemoveRange(oldSetting);
+            }
+            var listToAdd = model.Select(e => new SourceCounterparty { CounterpartyId = counterpartyId, SourceId = e });
+            db.SourceCounterparties.AddRange(listToAdd);
+            await db.SaveChangesAsync();
+        }
+        private async Task ChangePerformersCounterparty(string counterpartyId, string[] model)
+        {
+            var oldSetting = db.PerformerCounterparties.Where(e => e.CounterpartyId == counterpartyId).ToList();
+            if (oldSetting != null)
+            {
+                db.PerformerCounterparties.RemoveRange(oldSetting);
+            }
+            var listToAdd = model.Select(e => new PerformerCounterparty { CounterpartyId = counterpartyId, PerformerId = e });
+            db.PerformerCounterparties.AddRange(listToAdd);
+            await db.SaveChangesAsync();
+        }
+        private async Task ChangeAnalyticsCounterparty(string counterpartyId, int[] model)
+        {
+            var oldSetting = db.AnalyticsCounterparties.Where(e => e.CounterpartyId == counterpartyId).ToList();
+            if (oldSetting != null)
+            {
+                db.AnalyticsCounterparties.RemoveRange(oldSetting);
+            }
+            var listToAdd = model.Select(e => new AnalyticsCounterparty { CounterpartyId =counterpartyId, AnalyticsId = e});
+            db.AnalyticsCounterparties.AddRange(listToAdd);
+            await db.SaveChangesAsync();
         }
     }
 }
