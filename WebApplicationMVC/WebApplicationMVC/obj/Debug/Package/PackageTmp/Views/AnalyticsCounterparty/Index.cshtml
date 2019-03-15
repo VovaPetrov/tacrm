@@ -1,0 +1,112 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Аналітика для контрагента</title>
+    <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <link href="~/Content/bootstrap.min.css" type="text/css" rel="stylesheet" />
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/solid.js" integrity="sha384-tzzSw1/Vo+0N5UhStP3bvwWPq+uvzCMfrN1fEFe+xBmv1C/AtVX5K0uZtmcHitFZ" crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.13/js/fontawesome.js" integrity="sha384-6OIrr52G08NpOFSZdxxz1xdNSndlD4vdcf/q2myIUVO0VsqaGHJsB0RaBE01VTOY" crossorigin="anonymous"></script>
+    <style>
+        .logOut {
+            color: white;
+            font-size: 20px;
+            padding: 4px;
+            border-radius: 3px;
+           
+        }
+        .logOut:hover {
+            color: white;   
+            text-decoration:none;   
+             border: 1px solid white;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-light bg-primary">
+        <a class="navbar-brand" href="#">
+            <img src="~/Content/images/ta.png" height="40" class="d-inline-block align-top" alt="">
+        </a>
+        <div class="navbar-btn">
+            @using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+            {
+                @Html.AntiForgeryToken()
+            }
+            <a href="javascript:document.getElementById('logoutForm').submit()" class="logOut"><i class="fas fa-sign-out-alt"></i> Вийти</a>
+        </div>
+    </nav>
+    <div class="container">
+        <br />
+        <div class="row">
+            <div class="col-md-4">
+                <img src="~/Content/images/user.png" width="80" alt="">
+               
+            </div>
+            <div class="col-md-4">
+                <h4>@ViewBag.User.FirstName @ViewBag.User.LastName</h4>
+            </div>
+        </div>
+        <br />
+        <form action="/AnalyticsCounterparty/GenerateReport" method="post">
+            <h5>Вибір дати для звіту по замовленнях</h5>
+            <div class="row">
+                <div class="col-md-4">
+                    Початок <input type="date" name="date1" class="form-control datepickerFrom" autocomplete="off" required />
+                </div>
+                <div class="col-md-4">
+                    Кінець <input type="date" name="date2" class="form-control datepickerTo " autocomplete="off" required />
+                </div>
+            </div>
+            <div class="row">
+
+                <div class="col-md-8">
+                    <br />
+                    <h5>Вибрати виконавців</h5>
+                    <select name="Performers" class="form-control">
+                        <option value="0">Всі доступні</option>
+                        @foreach (var user in ViewBag.Performers)
+                        {
+                            <option value="@user.Id">@user.LastName @user.FirstName @user.MiddleName</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-8">
+                    <br />
+                    <h5>Вибрати контрагента</h5>
+                    <select name="SourceId" class="form-control">
+                        <option value="-1">Всі доступні</option>
+                        @foreach (var source in ViewBag.Sources)
+                        {
+                            <option value="@source.Id">@source.SourceName</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-8">
+                    <br />
+                    <h5>Вибрати тип аналітики</h5>
+                    <select name="TypeId" class="form-control">
+
+                        @foreach (var type in ViewBag.Analytics)
+                        {
+                            <option value="@type.Id">@type.TypeName</option>
+                        }
+                    </select>
+                </div>
+            </div>         
+            <hr />
+            <button class="btn btn-primary" type="submit" id="GenerateReport">Згенерувати</button>
+        </form>
+        <br />
+    </div>
+</body>
+</html>

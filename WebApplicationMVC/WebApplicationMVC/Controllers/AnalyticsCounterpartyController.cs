@@ -59,24 +59,30 @@ namespace WebApplicationMVC.Controllers
 
             var ordersIds = new List<int>();
             var orders = new List<Order>();
-           
+            var userId = User.Identity.GetUserId();
             if (Performers == "0")
             {
-                var userId = User.Identity.GetUserId();
+                
                 var signatories = db.PerformerCounterparties.Where(e => e.CounterpartyId == userId).Select(e=>e.PerformerId).ToList();
                 var perfomers = db.SignatoryOrders.Where(e => signatories.Contains(e.SignatoryId)).Select(e => e.OrderId).ToList();
                 if (SourceId != -1)
-                    orders = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && perfomers.Contains(e.Id) && e.SourceId == SourceId).ToList();
+                    orders = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && perfomers.Contains(e.Id) && e.SourceId == SourceId && e.CounterpartyId==userId).ToList();
                 else
-                    orders = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && perfomers.Contains(e.Id)).ToList();
+                {
+                    var sources = db.SourceCounterparties.Where(e => e.CounterpartyId == userId).Select(e => e.SourceId).ToList();
+                    orders = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && perfomers.Contains(e.Id) && e.SourceId.HasValue && sources.Contains(e.SourceId.Value) && e.CounterpartyId == userId).ToList();
+                }
             }           
             else
             {
                 var perfomers = db.SignatoryOrders.Where(e => e.SignatoryId==Performers).Select(e => e.OrderId).ToList();
                 if (SourceId != -1)
-                    orders = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && perfomers.Contains(e.Id) && e.SourceId == SourceId).ToList();
+                    orders = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && perfomers.Contains(e.Id) && e.SourceId == SourceId && e.CounterpartyId == userId).ToList();
                 else
-                    orders = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && perfomers.Contains(e.Id)).ToList();
+                {
+                    var sources = db.SourceCounterparties.Where(e => e.CounterpartyId == userId).Select(e => e.SourceId).ToList();
+                    orders = db.Orders.Where(e => e.CreatedDate >= date1 && e.CreatedDate <= date2 && perfomers.Contains(e.Id) && e.SourceId.HasValue && sources.Contains(e.SourceId.Value) && e.CounterpartyId == userId).ToList();
+                }
             }
 
             

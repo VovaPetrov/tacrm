@@ -140,6 +140,9 @@ namespace WebApplicationMVC.Controllers
             await db.SaveChangesAsync();
             id = newOrder.Id;
 
+            string folder = CreateFolder("Замовлення: " + newOrder.Name);
+            newOrder.DirectoryId = folder;
+
             var signId = db.SignatoryOrders.Where(e => e.OrderId == order.Id).Select(e => e.SignatoryId);
             foreach (var i in signId)
             {
