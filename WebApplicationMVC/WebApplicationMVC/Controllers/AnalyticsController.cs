@@ -835,7 +835,7 @@ namespace WebApplicationMVC.Controllers
                             cell.DataType = new EnumValue<CellValues>(CellValues.String);
                         }
                         cell = InsertCellInWorksheet("AB", startY + i, worksheetPart);
-                        cell.CellValue = new CellValue(order.CommentVerification ?? "");
+                        cell.CellValue = new CellValue("");
                         cell.DataType = new EnumValue<CellValues>(CellValues.String);
 
                         if (order.DateOfTransfer.HasValue)
@@ -845,7 +845,7 @@ namespace WebApplicationMVC.Controllers
                             cell.DataType = new EnumValue<CellValues>(CellValues.String);
                         }
                         cell = InsertCellInWorksheet("AD", startY + i, worksheetPart);
-                        cell.CellValue = new CellValue(order.CommentOfTransfer ?? "");
+                        cell.CellValue = new CellValue("");
                         cell.DataType = new EnumValue<CellValues>(CellValues.String);
 
                         cell = InsertCellInWorksheet("AE", startY + i, worksheetPart);
@@ -864,7 +864,7 @@ namespace WebApplicationMVC.Controllers
                             }
                         }
                         cell = InsertCellInWorksheet("AG", startY + i, worksheetPart);
-                        cell.CellValue = new CellValue(order.Comments);
+                        cell.CellValue = new CellValue("");
                         cell.DataType = new EnumValue<CellValues>(CellValues.String);
                     }
                 }
