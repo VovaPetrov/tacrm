@@ -94,7 +94,7 @@ namespace WebApplicationMVC.Controllers
             int id;
             var order = db.Orders.FirstOrDefault(e => e.Id == orderId.Value);
             var newOrder = new Order() {
-                IsPaid = order.IsPaid,
+                IsPaid = false,
                 IsPaidOverWatch = order.IsPaidOverWatch,
                 MetaId = order.MetaId,
                 BranchId = order.BranchId,
@@ -107,7 +107,7 @@ namespace WebApplicationMVC.Controllers
                 DateOfDirectVerification = order.DateOfDirectVerification,
                 DateOfEndVerification = order.DateOfEndVerification,
                 DateOfExpert = order.DateOfExpert,
-                DateOfPay = order.DateOfPay,
+                DateOfPay = null,
                 DateOfTakeVerification = order.DateOfTakeVerification,
                 DateOfTransfer = order.DateOfTransfer,
                 FullNameWatcher = order.FullNameWatcher,
