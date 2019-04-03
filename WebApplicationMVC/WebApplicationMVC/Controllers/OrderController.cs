@@ -103,7 +103,7 @@ namespace WebApplicationMVC.Controllers
                 Comments = order.Comments,
                 CommentVerification = order.CommentVerification,
                 CountDays = order.CountDays,
-                CreatedDate = order.CreatedDate,
+                CreatedDate = DateTime.Now,
                 DateOfDirectVerification = order.DateOfDirectVerification,
                 DateOfEndVerification = order.DateOfEndVerification,
                 DateOfExpert = order.DateOfExpert,
@@ -117,7 +117,7 @@ namespace WebApplicationMVC.Controllers
                 PriceOverWatch = order.PriceOverWatch,
                 PropsId = order.PropsId,
                 SourceId = order.SourceId,
-                StatusId = order.StatusId,  
+                StatusId = db.Statuses.FirstOrDefault(e=>e.Content.Contains("Переговори"))?.Id,  
                 CounterpartyId = order.CounterpartyId,
             };
 
@@ -132,10 +132,21 @@ namespace WebApplicationMVC.Controllers
             {
                 lastCount = Convert.ToInt32(lastOrder.Name.Substring(6));
             }
-
-            string Name = DateTime.Now.Year + "" + month + String.Format("{0:0000}", lastCount + 1);
-            newOrder.Name = Name;
-
+            
+            while (true)
+            {
+                string Name = DateTime.Now.Year + "" + month + String.Format("{0:0000}", lastCount + 1);
+                var searchedOrder = db.Orders.Where(e => e.Name == Name).FirstOrDefault();
+                if (searchedOrder == null)
+                {
+                    newOrder.Name = Name;
+                    break;
+                }
+                else
+                {
+                    lastCount++;
+                }
+            }
             db.Orders.Add(newOrder);
             await db.SaveChangesAsync();
             id = newOrder.Id;
@@ -987,8 +998,8 @@ namespace WebApplicationMVC.Controllers
             order.PropsId = model.ReckvId;
             order.Comments = model.Comments;
             order.CreatedDate = DateTime.Now.AddHours(1);
-            string month = order.CreatedDate.Value.Month <= 9 ? "0" + order.CreatedDate.Value.Month : order.CreatedDate.Value.Month + "";
-            var lastOrder = db.Orders.Where(e => e.CreatedDate.Value.Month == order.CreatedDate.Value.Month && e.CreatedDate.Value.Year == order.CreatedDate.Value.Year).ToList().LastOrDefault();
+            string month = DateTime.Now.Month <= 9 ? "0" + DateTime.Now.Month : DateTime.Now.Month + "";
+            var lastOrder = db.Orders.Where(e => e.CreatedDate.Value.Month == DateTime.Now.Month && e.CreatedDate.Value.Year == DateTime.Now.Year).ToList().LastOrDefault();
             int lastCount;
             if (lastOrder == null)
             {
@@ -999,8 +1010,20 @@ namespace WebApplicationMVC.Controllers
                 lastCount = Convert.ToInt32(lastOrder.Name.Substring(6));
             }
 
-            string Name = order.CreatedDate.Value.Year + "" + month + String.Format("{0:0000}", lastCount + 1);
-            order.Name = Name;
+            while (true)
+            {
+                string Name = DateTime.Now.Year + "" + month + String.Format("{0:0000}", lastCount + 1);
+                var searchedOrder = db.Orders.Where(e => e.Name == Name).FirstOrDefault();
+                if (searchedOrder == null)
+                {
+                    order.Name = Name;
+                    break;
+                }
+                else
+                {
+                    lastCount++;
+                }
+            }
 
             if (model.CountDays.HasValue)
                 order.CountDays = model.CountDays.Value;
