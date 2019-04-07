@@ -72,15 +72,15 @@
             var Status = db.Statuses.Where(e => e.Id == StatusId).FirstOrDefault();
             int? SourceId = order.SourceId;
             var Source = db.Sources.Where(e => e.Id == SourceId).FirstOrDefault();
-            string IsPaidTxt = "";
-            if (order.IsPaid == true)
+            string IsPaidTxt = "Не оплачено";
+            int? priceListId = order.PriceListId;
+            var payingOrder = db.Prices.Where(e => e.PriceListId == priceListId).ToList();
+            var payingTrue = payingOrder.Where(e => e.IsPaid == true);
+            if (payingTrue.Count() == payingOrder.Count() && payingOrder.Count()!=0)
             {
                 IsPaidTxt = "Оплачено";
             }
-            else
-            {
-                IsPaidTxt = "Не оплачено";
-            }
+
 
             <tr class="@color Order">
                 <td class="OrderId" style="display:none">@order.Id</td>

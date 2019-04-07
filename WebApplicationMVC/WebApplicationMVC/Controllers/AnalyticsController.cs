@@ -172,15 +172,26 @@ namespace WebApplicationMVC.Controllers
                             cell.DataType = new EnumValue<CellValues>(CellValues.String);
 
                             string IsPaid = "Ні";
-                            if (order.IsPaid.HasValue && order.IsPaid.Value)
+                            var payingOrder = db.Prices.Where(e => e.PriceListId == order.PriceListId);
+                            var payingTrue = payingOrder.Where(e => e.IsPaid == true);
+                            if (payingTrue.Count()==payingOrder.Count() && payingOrder.Count() != 0)
                                 IsPaid = "Так";
                             cell = InsertCellInWorksheet("L", startY + i, worksheetPart);
                             cell.CellValue = new CellValue(IsPaid);
                             cell.DataType = new EnumValue<CellValues>(CellValues.String);
 
                             cell = InsertCellInWorksheet("M", startY + i, worksheetPart);
-                            if (order.DateOfPay.HasValue)
-                                cell.CellValue = new CellValue(DateUkrFormat(order.DateOfPay.Value));
+                            var datesOfPay =db.Prices.Where(e => e.PriceListId == order.PriceListId && e.Date.HasValue).Select(e=>e.Date.Value).ToList();
+                        if (datesOfPay.Count() != 0)
+                        {
+                            var lastPay = datesOfPay.Max();
+                    
+                                cell.CellValue = new CellValue(DateUkrFormat(lastPay));
+                        }
+                        else
+                        {
+                            cell.CellValue = new CellValue("");
+                        }
                             cell.DataType = new EnumValue<CellValues>(CellValues.String);
 
                             if (order.PropsId.HasValue)
@@ -759,12 +770,21 @@ namespace WebApplicationMVC.Controllers
                         cell.CellValue = new CellValue(order.Name );
                         cell.DataType = new EnumValue<CellValues>(CellValues.String);
 
-                        if (order.DateOfPay.HasValue)
-                        {
+                      
                             cell = InsertCellInWorksheet("S", startY + i, worksheetPart);
-                            cell.CellValue = new CellValue(DateUkrFormat(order.DateOfPay.Value));
-                            cell.DataType = new EnumValue<CellValues>(CellValues.String);
+                        var datesOfPay = db.Prices.Where(e => e.PriceListId == order.PriceListId && e.Date.HasValue).Select(e => e.Date.Value).ToList();
+                        if (datesOfPay.Count() != 0)
+                        {
+                            var lastPay = datesOfPay.Max();
+
+                            cell.CellValue = new CellValue(DateUkrFormat(lastPay));
                         }
+                        else
+                        {
+                            cell.CellValue = new CellValue("");
+                        }
+                        cell.DataType = new EnumValue<CellValues>(CellValues.String);
+                       
                         StringBuilder str = new StringBuilder("");
                         var dateD = db.DateDocuments.Where(e => e.OrderId == orderId).ToList();
                         for (int j = 0; j < dateD.Count; j++)
@@ -789,8 +809,7 @@ namespace WebApplicationMVC.Controllers
 
                         DateTime dateTakeToWork;
                         List<DateTime> dates = new List<DateTime>();
-                        if (order.DateOfPay.HasValue)
-                            dates.Add(order.DateOfPay.Value);
+            
                         if (order.OverWatch.HasValue)
                             dates.Add(order.OverWatch.Value);
                         if (order.CreatedDate.HasValue)

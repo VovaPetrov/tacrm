@@ -7,6 +7,8 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+
 namespace WebApplicationMVC.Models
 {
     // В профиль пользователя можно добавить дополнительные данные, если указать больше свойств для класса ApplicationUser. Подробности см. на странице https://go.microsoft.com/fwlink/?LinkID=317594.
@@ -154,6 +156,9 @@ namespace WebApplicationMVC.Models
         public decimal Value { get; set; }
         public string Appointment { get; set; }
         public int PriceListId { get; set; }
+        [DefaultValue("false")]
+        public bool IsPaid { get; set; }
+        public DateTime? Date { get; set; }
     }
     public class Props
     {

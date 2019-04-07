@@ -37,12 +37,7 @@
                 <button class="btn btn-primary" type="submit" id="getAct"><i class="fas fa-print"></i> Акт</button>
             </form>
         </div>
-        <div class="col-md-1">
-            <form method="post" action="/Order/DelOrder">
-                <input type="hidden" name="OrderId" value="@ViewBag.Id" />
-                <button class="btn btn-danger" type="submit" id="delOrder"><i class="fas fa-times"></i> Видалити</button>
-            </form>
-        </div>
+      
     </div>
     <div class="menu">
         <div class="form-group" style="margin-top:20px">
@@ -401,71 +396,6 @@
             </div>
         </div>
         <div class="container">
-            <div class="row">
-                @if (ViewBag.IsUserAdmin)
-                {
-                    <div class="col-md-4">
-                        <h5>Оплата</h5>
-                        <div class="form-group">
-                            <label>
-                                Наявність оплати
-                            </label>
-                            <br />
-                            @if (ViewBag.IsPaid != null && (bool)ViewBag.IsPaid == true)
-                            {
-
-                                @:<input type="radio" name="oplata" value="true" checked="checked"> Так
-                                @:<input type="radio" name="oplata" value="false">Ні
-                            }
-                            else
-                            {
-                                @:<input type="radio" name="oplata" value="true"> Так
-                                @:<input type="radio" name="oplata" value="false" checked="checked">Ні
-                            }
-
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <h5>Дата оплати</h5>
-                        <div class="form-group">
-                            <input type="date" class="form-control" name="DateOfPay" value="@if(Model.DateOfPay.HasValue){@Model.DateOfPay.Value.ToString("yyyy-MM-dd")}" />
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    <div class="col-md-4">
-                        <h5>Оплата</h5>
-                        <div class="form-group">
-                            <label>
-                                Наявність оплати
-                            </label>
-                            <br />
-                            @if (ViewBag.IsPaid != null && (bool)ViewBag.IsPaid == true)
-                            {
-
-                                @:<input type="radio" name="oplata" disabled value="true" checked="checked"> Так
-                                @:<input type="radio" name="oplata" disabled value="false">Ні
-                            }
-                            else
-                            {
-                                @:<input type="radio" name="oplata" disabled value="true"> Так
-                                @:<input type="radio" name="oplata" disabled value="false" checked="checked">Ні
-                            }
-
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <h5>Дата оплати</h5>
-                        <div class="form-group">
-                            <input type="date" class="form-control" readonly name="DateOfPay" value="@if(Model.DateOfPay.HasValue){@Model.DateOfPay.Value.ToString("yyyy-MM-dd")}" />
-                        </div>
-                    </div>
-                }
-
-            </div>
-
-
             <div class="form-group ">
                 <label>
                     Реквізити рахунку
@@ -482,13 +412,27 @@
             </div>
             <hr />
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-8">
                     <table id="partsPrice">
                         @foreach (var pay in ViewBag.Payments)
                         {
                             <tr>
-                                <td class='appointment'>@pay.Appointment</td>
-                                <td class="partPrice">@pay.Value</td>
+                                <td> <input type="hidden" value="@pay.Id" class="PayId" /></td>
+                                <td class='appointment'><input type="text" value="@pay.Appointment" /></td>
+                                
+                                <td class="partPrice" >@pay.Value</td>
+                                <td>
+                                    <input type="date" name="payDate" class="payDate form-control" value="@if (pay.Date!=null)
+                                        {
+                                             @pay.Date.ToString("yyyy-MM-dd")
+                                        }" />                                  
+                                </td>
+                                <td>
+                                    <input type="checkbox" class="isPaid" @if (pay.IsPaid) { 
+                                        @: checked="checked"
+                                           } 
+                                           name="isPaid" />
+                                </td>
                                 <td>  <span class='delPrice'> <i class='fas fa-times'></i></span></td>
                             </tr>
                         }
@@ -498,8 +442,7 @@
                         <input type="number" class="form-control" name="TotalPrice" value="@ViewBag.Sum" />
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="priceBox">
+                <div class="col-md-4 priceBox">
                         <div class="form-group">
                             <label>Призначення</label>
                             <input type="text" class="form-control" name="Appointment" />

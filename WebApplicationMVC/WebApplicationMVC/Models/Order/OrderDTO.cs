@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
+
 namespace WebApplicationMVC.Models
 {
     public class OrderDTO
@@ -41,8 +42,7 @@ namespace WebApplicationMVC.Models
         public DateTime? DateDirectVerification {get;set;}
         public DateTime? DateEndVerification {get;set;}
         public string CommentsVerification {get;set;}
-        public string[] AppoArr {get;set;}
-        public decimal[] PriceArr {get;set;}
+        public PayingDTO PayingInfo { get; set; }
         public DateTime? DateOfExpert {get;set;}
     }
 }

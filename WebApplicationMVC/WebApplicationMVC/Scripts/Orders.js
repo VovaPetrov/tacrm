@@ -85,7 +85,19 @@
             function () {
                 var appointment = $("input[name='Appointment']").val();
                 var price = $("input[name='ObjPrice']").val();
-                $("#partsPrice").append(`<tr><td class='appointment'>${appointment}</td><td class='partPrice'>${price}</td><td>  <span class='delPrice' > <i class='fas fa-times'></i></span></td></tr>`);
+                $("#partsPrice").append(
+                    `<tr>
+ <td> <input type="hidden" value="0" class="PayId" /></td>
+                        <td class='appointment'><input type="text" value="${appointment}" /></td>
+                        <td class='partPrice'>${price}</td>
+                         <td>
+                                    <input type="date" name="payDate" class="payDate form-control" /> </td>
+                                <td>
+
+                                    <input type="checkbox" class="isPaid" name="isPaid" />
+                                </td>
+                        <td>  <span class='delPrice' > <i class='fas fa-times'></i></span></td>
+                    </tr>`);
                 var total = 0;
 
                 $(".partPrice").each(
@@ -191,9 +203,6 @@
                 var CommentsVerification = $("#AddOrderForm").find("input[name='CommentsVerification']").val();
                 var DateOfExpert = $("#AddOrderForm").find("input[name='DateOfExpert']").val();
 
-                var IsPaid = $("#AddOrderForm").find("input[name='oplata']:checked").val();
-                var DateOfPay = $("#AddOrderForm").find("input[name='DateOfPay']").val();
-
                 var ObjListArray = new Array();
                 var objId = $(".objId");
                 if (objId.length == 0) {
@@ -215,23 +224,39 @@
 
                 var PriceArr = new Array();
                 var AppoArr = new Array();
-                var Appointment = $("#partsPrice").find(".appointment").each(
+                var PayDateArr = new Array();
+                var IsPaidArr = new Array();
+               
+                var Appointment = $("#partsPrice").find(".appointment input").each(
                     function () {
-                        AppoArr.push($(this).text());
+                        AppoArr.push($(this).val());
+                      
+                        
                     }
                 );
                 var PartPrice = $("#partsPrice").find(".partPrice").each(
                     function () {
+                
                         PriceArr.push($(this).text());
+                    }
+                );
+                var PayDates = $("#partsPrice").find(".payDate").each(
+                    function () {
+                        PayDateArr.push($(this).val());
+                    }
+                );
+                var IsPaided = $("#partsPrice").find(".isPaid").each(
+                    function () {
+                        IsPaidArr.push($(this).prop('checked'));
                     }
                 );
 
 
-
                 var orderId = "";
                 $.ajax({
-                    type: "POST", url: "/Order/Add",
-                    success:
+                    type: "POST",
+                    url: "/Order/Add",              
+                   success:
                         function (data) {
                                 orderId = data;
                                 
@@ -262,8 +287,8 @@
                     data: {
                         MetaId: MetaId, CountDays: CountDays, StatusId: StatusId, SourceId: SourceId, BranchId: BranchId,
                         UsersId: UsersId, CounterpartyId: CounterpartyId ,ClientName: ClientName, Tel: Tel, IPN: IPN, Email: Email, Reckv: Reckv, OwnerName: OwnerName, OwnerTel: OwnerTel, OwnerIPN: OwnerIPN, OwnerEmail: OwnerEmail, OwnerReckv: OwnerReckv,
-                        ReckvId: ReckvId, Comments: Comments, DateOfDocument: dateOfDocument, DateOfPay: DateOfPay,
-                        IsPaid: IsPaid, PriceArr: PriceArr, AppoArr: AppoArr,
+                        ReckvId: ReckvId, Comments: Comments, DateOfDocument: dateOfDocument,
+                        PayingInfo: { PriceArr: PriceArr, AppoArr: AppoArr, IsPaidArr: IsPaidArr, PayDateArr: PayDateArr },
                         Inspector: Inspector, InspectionDate: InspectionDate, InspectionPrice: InspectionPrice, CommentsOfTransfer: CommentsOfTransfer, DateOfTransfer: DateOfTransfer,
                         DateTakeVerification: DateTakeVerification, DateDirectVerification: DateDirectVerification, DateEndVerification: DateEndVerification, CommentsVerification: CommentsVerification, DateOfExpert: DateOfExpert, SignatoriesId: SignatoriesId
                     }
@@ -341,7 +366,7 @@
                 var ReckvId = $("#EditOrder").find("select[name='Props'] option:selected").val();
                 var IsPaid = $("#EditOrder").find("input[name='oplata']:checked").val();
 
-                var DateOfPay = $("#EditOrder").find("input[name='DateOfPay']").val();
+       
                 var dateOfDocument = $("#EditOrder").find("input[name='DateOfDocument']").last().val();
                 var DateOfTransfer = $("#EditOrder").find("input[name='DateOfTransfer']").val();
                 var CommentsOfTransfer = $("#EditOrder").find("input[name='CommentsOfTransfer']").val();
@@ -367,9 +392,19 @@
 
                 var PriceArr = new Array();
                 var AppoArr = new Array();
-                var Appointment = $("#partsPrice").find(".appointment").each(
+                var PayDateArr = new Array();
+                var IsPaidArr = new Array();
+                var IdArr = new Array();
+
+                $("#partsPrice").find(".PayId").each(
                     function () {
-                        AppoArr.push($(this).text());
+                        IdArr.push($(this).val());
+                    }
+                );
+
+                var Appointment = $("#partsPrice").find(".appointment input").each(
+                    function () {
+                        AppoArr.push($(this).val());
                     }
                 );
                 var PartPrice = $("#partsPrice").find(".partPrice").each(
@@ -377,6 +412,19 @@
                         PriceArr.push($(this).text());
                     }
                 );
+                ////
+                var PayDates = $("#partsPrice").find(".payDate").each(
+                    function () {
+                        PayDateArr.push($(this).val());
+                    }
+                );
+                var IsPaided = $("#partsPrice").find(".isPaid").each(
+                    function () {
+                        IsPaidArr.push($(this).prop('checked'));
+                    }
+                );
+               
+
 
                 $.ajax({
                     type: "POST", url: "/Order/Edit",
@@ -413,9 +461,10 @@
                         MetaId: MetaId, StatusId: StatusId, SourceId: SourceId, BranchId: BranchId,
                         UsersId: UsersId, CounterpartyId: СounterpartyId, ClientName: ClientName, Tel: Tel, IPN: IPN, Email: Email, Reckv: Reckv,
                         ReckvId: ReckvId, Comments: Comments, CountDays: CountDays,
-                        DateOfPay: DateOfPay, DateOfDocument: dateOfDocument,
+                         DateOfDocument: dateOfDocument,
                         OwnerName: OwnerName, OwnerTel: OwnerTel, OwnerIPN: OwnerIPN, OwnerEmail: OwnerEmail, OwnerReckv: OwnerReckv,
-                        Inspector: Inspector,PaidOverWatch: InspectionIsPaid, InspectionDate: InspectionDate, InspectionPrice: InspectionPrice, IsPaid: IsPaid, PriceArr: PriceArr, AppoArr: AppoArr,
+                        Inspector: Inspector, PaidOverWatch: InspectionIsPaid, InspectionDate: InspectionDate, InspectionPrice: InspectionPrice, IsPaid: IsPaid,
+                        PayingInfo: {IdArr:IdArr, PriceArr: PriceArr, AppoArr: AppoArr, IsPaidArr: IsPaidArr, PayDateArr: PayDateArr },
                         CommentsOfTransfer: CommentsOfTransfer, DateOfTransfer: DateOfTransfer,
                         DateTakeVerification: DateTakeVerification, DateDirectVerification: DateDirectVerification, DateEndVerification: DateEndVerification, CommentsVerification: CommentsVerification, DateOfExpert: DateOfExpert, SignatoriesId: SignatoriesId
                     }

@@ -259,57 +259,7 @@
         </div>
     </div>
     <div class="container">
-        <div class="row">
-            @if (ViewBag.IsUserAdmin)
-            {
-                <div class="col-md-4">
-                    <h5>Оплата</h5>
-                    <div class="form-group">
-                        <label>
-                            Наявність оплати
-                        </label>
-                        <br />
-
-                        <input type="radio" name="oplata" value="true"> Так
-                        <input type="radio" name="oplata" value="false">Ні
-
-
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <h5>Дата оплати</h5>
-                    <div class="form-group">
-                        <input type="date" class="form-control" name="DateOfPay" />
-                    </div>
-                </div>
-            }
-            else
-            {
-                <div class="col-md-4">
-                    <h5>Оплата</h5>
-                    <div class="form-group">
-                        <label>
-                            Наявність оплати
-                        </label>
-                        <br />
-
-                        <input type="radio" name="oplata" readonly value="true"> Так
-                        <input type="radio" name="oplata" readonly value="false">Ні
-
-
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <h5>Дата оплати</h5>
-                    <div class="form-group">
-                        <input type="date" class="form-control" readonly name="DateOfPay" />
-                    </div>
-                </div>
-            }
-
-        </div>
-
-
+            <h5>Оплата</h5>
         <div class="form-group ">
             <label>
                 Реквізити рахунку
@@ -325,7 +275,7 @@
         </div>
         <hr />
         <div class="row">
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <table id="partsPrice"></table>
                 <div class="form-group">
                     <label>Всього</label>

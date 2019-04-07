@@ -372,18 +372,28 @@
     <Compile Include="Migrations\201903111423336_Added counterparty entities.Designer.cs">
       <DependentUpon>201903111423336_Added counterparty entities.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201904031409393_Added multiply paying to Order.cs" />
+    <Compile Include="Migrations\201904031409393_Added multiply paying to Order.Designer.cs">
+      <DependentUpon>201904031409393_Added multiply paying to Order.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201904031603382_Added date of paying to Order.cs" />
+    <Compile Include="Migrations\201904031603382_Added date of paying to Order.Designer.cs">
+      <DependentUpon>201904031603382_Added date of paying to Order.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\AnalyticsModel.cs" />
     <Compile Include="Models\CalendarModel.cs" />
     <Compile Include="Models\Counterparty\CounterpartyDTO.cs" />
     <Compile Include="Models\Order\OrderDTO.cs" />
+    <Compile Include="Models\Order\PayingDTO.cs" />
     <Compile Include="Models\Users\EditCounterpartyModel.cs" />
     <Compile Include="Models\Users\EmployeesViewModel.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\Translate.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\GoogleDriveService.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -734,6 +744,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201903111423336_Added counterparty entities.resx">
       <DependentUpon>201903111423336_Added counterparty entities.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904031409393_Added multiply paying to Order.resx">
+      <DependentUpon>201904031409393_Added multiply paying to Order.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201904031603382_Added date of paying to Order.resx">
+      <DependentUpon>201904031603382_Added date of paying to Order.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

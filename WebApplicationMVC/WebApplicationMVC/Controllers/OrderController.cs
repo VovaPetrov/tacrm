@@ -20,6 +20,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System.Text;
 using System.Threading.Tasks;
+using WebApplicationMVC.Services;
 
 namespace WebApplicationMVC.Controllers
 {
@@ -30,31 +31,9 @@ namespace WebApplicationMVC.Controllers
         public OrderController()
         {
             db = new ApplicationDbContext();
+                    
         }
-        public DriveService GetService()
-        {
-            string[] Scopes = { DriveService.Scope.Drive };
-            string ApplicationName = "Drive API .NET Quickstart";
-            UserCredential credential;
-            using (var stream = new FileStream(Server.MapPath(("~/Content/API/DriveCredentials.json")), FileMode.Open, FileAccess.Read))
-            {
-                String FilePath = Server.MapPath(("~/Content/API/DriveServiceCredentials.json"));
-
-                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.Load(stream).Secrets,
-                    Scopes,
-                    "user",
-                    CancellationToken.None,
-                    new FileDataStore(FilePath, true)).Result;
-            }
-            // Create Drive API service.
-            var service = new DriveService(new BaseClientService.Initializer()
-            {
-                HttpClientInitializer = credential,
-                ApplicationName = ApplicationName,
-            });
-            return service;
-        }
+     
         public ActionResult Index()
         {
             var userId = User.Identity.GetUserId();
@@ -875,120 +854,11 @@ namespace WebApplicationMVC.Controllers
             return newDate;
         }
         [HttpPost]
-        public ActionResult Edit(OrderDTO model)
-        {
-            var objList = db.ObjectLists.Where(e => e.OrderId == model.OrderId);
-            var objListId = db.ObjectLists.Where(e => e.OrderId == model.OrderId).Select(e => e.Id);
-            var objValues = db.ObjectValues.Where(e => objListId.Contains(e.ObjectListId));
-            db.ObjectValues.RemoveRange(objValues);
-            db.ObjectLists.RemoveRange(objList);
-
-            var order = db.Orders.Where(e => e.Id == model.OrderId).FirstOrDefault();
-            order.MetaId = model.MetaId.HasValue ? model.MetaId.Value : 0;
-            order.StatusId = model.StatusId;
-            order.BranchId = model.BranchId;
-            order.SourceId = model.SourceId;
-            order.PropsId = model.ReckvId;
-            order.Comments = model.Comments;
-
-            if (model.CountDays.HasValue)
-                order.CountDays = model.CountDays.Value;
-
-            var UsersDel = db.Performerses.Where(e => e.OrderId == model.OrderId).ToList();
-            db.Performerses.RemoveRange(UsersDel);
-
-            foreach (var i in model.UsersId) {
-                Performers performers = new Performers() { OrderId = model.OrderId.Value, UserId = i };
-                db.Performerses.Add(performers);
-            }
-
-            var SignatoriesDel = db.SignatoryOrders.Where(e => e.OrderId == model.OrderId).ToList();
-            db.SignatoryOrders.RemoveRange(SignatoriesDel);
-            List<string> SignatoriesId = new List<string>();
-            if (model.SignatoriesId != null)
-            {
-                SignatoriesId = model.SignatoriesId.Distinct().ToList();
-            }
-            if (SignatoriesId.Count == 0)
-            { 
-                foreach (var i in model.UsersId)
-                {
-                    SignatoryOrder performers = new SignatoryOrder() { OrderId = model.OrderId.Value, SignatoryId = i };
-                    db.SignatoryOrders.Add(performers);
-                }
-            }
-            else
-            {
-                foreach (var i in SignatoriesId)
-                {
-                    SignatoryOrder performers = new SignatoryOrder() { OrderId = model.OrderId.Value, SignatoryId = i };
-                    db.SignatoryOrders.Add(performers);
-                }
-            }
-
-            order.CounterpartyId = model.CounterpartyId;
-            //DateOfDocument
-            DateDocument date;
-            if (model.DateOfDocument.HasValue && order.CreatedDate != model.DateOfDocument.Value)
-            {
-                date = new DateDocument() { OrderId = order.Id, DateOfDocument = model.DateOfDocument.Value };
-                db.DateDocuments.Add(date);
-            }
-            order.DateOfPay = model.DateOfPay;
-
-            Client newClient = new Client() { IPN_EDRPOY = model.IPN, Email = model.Email, FullName = model.ClientName, Phone = model.Tel, Props = model.Reckv };
-            db.Clients.Add(newClient);
-
-            Owner owner = new Owner() { FullName = model.OwnerName, IPN_EDRPOY = model.OwnerIPN, Email = model.OwnerEmail, Props = model.OwnerReckv, Phone = model.OwnerTel };
-            db.Owners.Add(owner);
-            db.SaveChanges();
-
-            order.ClientId = newClient.Id;
-            order.OwnerId = owner.Id;
-
-
-            order.CommentOfTransfer = model.CommentsOfTransfer;
-            order.DateOfTransfer = model.DateOfTransfer;
-            order.DateOfTakeVerification = model.DateTakeVerification;
-            order.DateOfEndVerification = model.DateEndVerification;
-            order.DateOfDirectVerification = model.DateDirectVerification;
-            order.CommentVerification = model.CommentsVerification;
-            order.DateOfExpert = model.DateOfExpert;
-
-            order.FullNameWatcher = model.Inspector;
-            if (model.InspectionDate.HasValue)
-                order.OverWatch = model.InspectionDate.Value;
-            if (model.InspectionPrice.HasValue)
-                order.PriceOverWatch = model.InspectionPrice.Value;
-            order.IsPaidOverWatch = model.PaidOverWatch ?? false;
-
-            if (model.IsPaid != null)
-                if (model.IsPaid == "true")
-                    order.IsPaid = true;
-                else
-                    order.IsPaid = false;
-
-            PriceList list = new PriceList();
-            db.PriceLists.Add(list);
-            db.SaveChanges();
-            order.PriceListId = list.Id;
-
-            if (model.AppoArr != null)
-                for (int i = 0; i < model.AppoArr.Length; i++)
-                {
-                    Price price = new Price() { PriceListId = list.Id, Value = model.PriceArr[i], Appointment = model.AppoArr[i] };
-                    db.Prices.Add(price);
-                }
-
-            db.SaveChanges();
-            return Content(order.Id + "");
-        }
-        [HttpPost]
         public ActionResult Add(OrderDTO model)
         {
             
             Order order = new Order();
-         
+            bool IsUserAdmin = User.IsInRole("Admin");
             int orderId;
             order.MetaId = model.MetaId.HasValue ? model.MetaId.Value : 0;
             order.StatusId = model.StatusId;
@@ -1039,7 +909,8 @@ namespace WebApplicationMVC.Controllers
             order.DirectoryId = folder;
 
             var usersId = model.UsersId.Distinct().ToArray();
-            foreach (var i in usersId) {
+            foreach (var i in usersId)
+            {
                 Performers performers = new Performers() { OrderId = orderId, UserId = i };
                 db.Performerses.Add(performers);
             }
@@ -1075,19 +946,17 @@ namespace WebApplicationMVC.Controllers
             else
                 date = new DateDocument() { OrderId = order.Id, DateOfDocument = DateTime.Now.Date };
             db.DateDocuments.Add(date);
-            order.DateOfPay = model.DateOfPay;
+
             //Client
-
             Client client = new Client() { FullName = model.ClientName, IPN_EDRPOY = model.IPN, Email = model.Email, Props = model.Reckv, Phone = model.Tel };
-            db.Clients.Add(client);
-            db.SaveChanges();
-            order.ClientId = client.Id;
-
+            db.Clients.Add(client);          
+          
             //Owner
-
             Owner owner = new Owner() { FullName = model.OwnerName, IPN_EDRPOY = model.OwnerIPN, Email = model.OwnerEmail, Props = model.OwnerReckv, Phone = model.OwnerTel };
             db.Owners.Add(owner);
             db.SaveChanges();
+
+            order.ClientId = client.Id;
             order.OwnerId = owner.Id;
 
             order.CommentOfTransfer = model.CommentsOfTransfer;
@@ -1096,34 +965,40 @@ namespace WebApplicationMVC.Controllers
             order.DateOfEndVerification = model.DateEndVerification;
             order.DateOfDirectVerification = model.DateDirectVerification;
             order.CommentVerification = model.CommentsVerification;
-            order.FullNameWatcher = model.Inspector ?? "";
+            order.FullNameWatcher = model.Inspector;
+
             order.OverWatch = model.InspectionDate;
-            if (model.InspectionPrice.HasValue)
-                order.PriceOverWatch = model.InspectionPrice.Value;
 
-
-            if (model.IsPaid != null)
-                if (model.IsPaid == "true")
-                    order.IsPaid = true;
-                else
-                    order.IsPaid = false;
+            if (IsUserAdmin)
+            {
+                order.PriceOverWatch = model.InspectionPrice;
+            }
 
             PriceList list = new PriceList();
             db.PriceLists.Add(list);
             db.SaveChanges();
             order.PriceListId = list.Id;
 
-            if (model.AppoArr != null)
+            if (model.PayingInfo != null && model.PayingInfo.AppoArr!=null)
             {
-                for (int i = 0; i < model.AppoArr.Length; i++)
+                for (int i = 0; i < model.PayingInfo.AppoArr.Length; i++)
                 {
-                    Price price = new Price() { PriceListId = list.Id, Value = model.PriceArr[i], Appointment = model.AppoArr[i] };
+                    Price price = new Price() { PriceListId = list.Id,
+                        Value = model.PayingInfo.PriceArr[i],
+                        Appointment = model.PayingInfo.AppoArr[i]                      
+                    };
+                    if(IsUserAdmin)
+                    {
+                        price.Date = model.PayingInfo.PayDateArr[i];
+                        price.IsPaid = model.PayingInfo.IsPaidArr[i];
+                        
+                    }
                     db.Prices.Add(price);
                 }
             }
 
             db.SaveChanges();
-            return Content(order.Id + "");
+            return Content(order.Id.ToString());
         }
 
         public ActionResult Add()
@@ -1188,19 +1063,14 @@ namespace WebApplicationMVC.Controllers
             ViewBag.Overwiever = result.FullNameWatcher;
             ViewBag.DatesDocument = db.DateDocuments.Where(e => e.OrderId == result.Id).ToList();
             System.Text.StringBuilder tmpDate = new System.Text.StringBuilder("");
-            if (result.OverWatch.HasValue)
-            {
-                tmpDate.Append(result.OverWatch.Value.Year + "");
-                tmpDate.Append("-" + (result.OverWatch.Value.Month <= 9 ? "0" + result.OverWatch.Value.Month : result.OverWatch.Value.Month + ""));
-                tmpDate.Append("-" + (result.OverWatch.Value.Day <= 9 ? "0" + result.OverWatch.Value.Day : result.OverWatch.Value.Day + ""));
-            }
-            ViewBag.DateTimeOverWatch = tmpDate;
+
+            ViewBag.DateTimeOverWatch = result.OverWatch?.ToString("yyyy-MM-dd");
             if (result.PriceOverWatch.HasValue)
                 ViewBag.PriceOverWatch = (int)result.PriceOverWatch.Value;
             ViewBag.IsPaidOverWatch = result.IsPaidOverWatch;
 
             ViewBag.Comments = result.Comments;
-            ViewBag.IsPaid = result.IsPaid;
+       
 
             if (result.PropsId != null)
                 ViewBag.PropsId = result.PropsId.Value;
@@ -1222,7 +1092,7 @@ namespace WebApplicationMVC.Controllers
             ViewBag.objTypes = objTypes.ToList();
             ViewBag.objList = objList.ToList();
 
-            var service = GetService();
+            var service =GetService();
             FilesResource.ListRequest listRequest = service.Files.List();
             listRequest.PageSize = 100;
             listRequest.Q = $"'{result.DirectoryId}' in parents";
@@ -1246,6 +1116,149 @@ namespace WebApplicationMVC.Controllers
             ViewBag.Managers = db.Users.Where(e => !CounterpartiesId.Contains(e.Id) && e.EmailConfirmed);
             ViewBag.Signatories = db.SignatoryOrders.Where(e=>e.OrderId==result.Id).Select(e=>e.SignatoryId).ToList();
             return View(result);
+        }
+        [HttpPost]
+        public ActionResult Edit(OrderDTO model)
+        {
+            bool IsUserAdmin = User.IsInRole("Admin");
+
+            var objList = db.ObjectLists.Where(e => e.OrderId == model.OrderId);
+            var objListId = db.ObjectLists.Where(e => e.OrderId == model.OrderId).Select(e => e.Id);
+            var objValues = db.ObjectValues.Where(e => objListId.Contains(e.ObjectListId));
+            db.ObjectValues.RemoveRange(objValues);
+            db.ObjectLists.RemoveRange(objList);
+
+            var order = db.Orders.Where(e => e.Id == model.OrderId).FirstOrDefault();
+            order.MetaId = model.MetaId.HasValue ? model.MetaId.Value : 0;
+            order.StatusId = model.StatusId;
+            order.BranchId = model.BranchId;
+            order.SourceId = model.SourceId;
+            order.PropsId = model.ReckvId;
+            order.Comments = model.Comments;
+
+            if (model.CountDays.HasValue)
+                order.CountDays = model.CountDays.Value;
+
+            var UsersDel = db.Performerses.Where(e => e.OrderId == model.OrderId).ToList();
+            db.Performerses.RemoveRange(UsersDel);
+
+            foreach (var i in model.UsersId)
+            {
+                Performers performers = new Performers() { OrderId = model.OrderId.Value, UserId = i };
+                db.Performerses.Add(performers);
+            }
+
+            var SignatoriesDel = db.SignatoryOrders.Where(e => e.OrderId == model.OrderId).ToList();
+            db.SignatoryOrders.RemoveRange(SignatoriesDel);
+            List<string> SignatoriesId = new List<string>();
+            if (model.SignatoriesId != null)
+            {
+                SignatoriesId = model.SignatoriesId.Distinct().ToList();
+            }
+            if (SignatoriesId.Count == 0)
+            {
+                foreach (var i in model.UsersId)
+                {
+                    SignatoryOrder performers = new SignatoryOrder() { OrderId = model.OrderId.Value, SignatoryId = i };
+                    db.SignatoryOrders.Add(performers);
+                }
+            }
+            else
+            {
+                foreach (var i in SignatoriesId)
+                {
+                    SignatoryOrder performers = new SignatoryOrder() { OrderId = model.OrderId.Value, SignatoryId = i };
+                    db.SignatoryOrders.Add(performers);
+                }
+            }
+
+            order.CounterpartyId = model.CounterpartyId;
+            //DateOfDocument
+            DateDocument date;
+            if (model.DateOfDocument.HasValue && order.CreatedDate != model.DateOfDocument.Value)
+            {
+                date = new DateDocument() { OrderId = order.Id, DateOfDocument = model.DateOfDocument.Value };
+                db.DateDocuments.Add(date);
+            }
+  
+
+            Client newClient = new Client() { IPN_EDRPOY = model.IPN, Email = model.Email, FullName = model.ClientName, Phone = model.Tel, Props = model.Reckv };
+            db.Clients.Add(newClient);
+
+            Owner owner = new Owner() { FullName = model.OwnerName, IPN_EDRPOY = model.OwnerIPN, Email = model.OwnerEmail, Props = model.OwnerReckv, Phone = model.OwnerTel };
+            db.Owners.Add(owner);
+            db.SaveChanges();
+
+            order.ClientId = newClient.Id;
+            order.OwnerId = owner.Id;
+
+
+            order.CommentOfTransfer = model.CommentsOfTransfer;
+            order.DateOfTransfer = model.DateOfTransfer;
+            order.DateOfTakeVerification = model.DateTakeVerification;
+            order.DateOfEndVerification = model.DateEndVerification;
+            order.DateOfDirectVerification = model.DateDirectVerification;
+            order.CommentVerification = model.CommentsVerification;
+            order.DateOfExpert = model.DateOfExpert;
+
+            //Overwatch
+            order.FullNameWatcher = model.Inspector;           
+            order.OverWatch = model.InspectionDate;
+            if (IsUserAdmin)
+            {
+                order.PriceOverWatch = model.InspectionPrice;
+                order.IsPaidOverWatch = model.PaidOverWatch ?? false;
+            }
+
+
+            var prices = db.Prices.Where(e => e.PriceListId == order.PriceListId).ToList();
+            List<Price> newPrices = new List<Price>();
+            if (model.PayingInfo != null && model.PayingInfo.AppoArr != null)
+            {
+                
+                for (int i = 0; i < model.PayingInfo.AppoArr.Length; i++)
+                {
+                    var oldPrice = prices.Where(e => model.PayingInfo.IdArr[i].Value!=0&& e.Id == model.PayingInfo.IdArr[i].Value).FirstOrDefault();
+                    if (oldPrice == null)
+                    {
+                        Price price = new Price()
+                        {
+                            Appointment = model.PayingInfo.AppoArr[i],
+                            Value = model.PayingInfo.PriceArr[i],
+                            PriceListId = order.PriceListId.Value
+                        };
+                        if (IsUserAdmin)
+                        {
+                            price.Date = model.PayingInfo.PayDateArr[i];
+                            price.IsPaid = model.PayingInfo.IsPaidArr[i];
+                        }
+                        newPrices.Add(price);                    
+                    }                  
+                    else
+                    {
+                        oldPrice.Appointment = model.PayingInfo.AppoArr[i];
+                        if (IsUserAdmin)
+                        {
+                            oldPrice.Date = model.PayingInfo.PayDateArr[i];
+                            oldPrice.IsPaid = model.PayingInfo.IsPaidArr[i];
+                        }
+                        newPrices.Add(oldPrice);
+                    }
+
+                   
+                }
+                var OldPrices = prices.Where(e => !model.PayingInfo.IdArr.Contains(e.Id));
+                if(!IsUserAdmin)
+                {
+                    newPrices.AddRange(OldPrices);
+                }
+                db.Prices.RemoveRange(prices);
+                db.SaveChanges();
+                db.Prices.AddRange(newPrices);
+            }
+
+            db.SaveChanges();
+            return Content(order.Id + "");
         }
         public ActionResult CreateObjList(int OrderId, int ObjId)
         {
@@ -1275,62 +1288,7 @@ namespace WebApplicationMVC.Controllers
             var result = db.ObjectDesces.Where(e => e.ObjectTypeId == Id).ToList();
             return Json(result, JsonRequestBehavior.AllowGet);
         }
-        public string CreateFolder(string name)
-        {
-            var service = GetService();
-            var list = service.Files.List();
-            list.Q = "name contains 'CRM'";
-            var files = list.Execute();
-            string Directory = "1BMCcePzGKZ4XiRgGkmh2eh4ZuI3o16EV";
-            if (files.Files.Count >= 1)
-            {
-                var fileMetadata = new Google.Apis.Drive.v3.Data.File()
-                {
-                    Name = name,
-                    Parents = new List<string>
-                    {
-                       Directory
-                    }
-                    ,
-                    MimeType = "application/vnd.google-apps.folder"
-                };
-
-
-
-                var request = service.Files.Create(fileMetadata);
-                request.Fields = "id,name";
-                var f = request.Execute();
-                return f.Id;
-            }
-            else
-            {
-                var fileMetadataCRM = new Google.Apis.Drive.v3.Data.File()
-                {
-                    Name = "CRM",
-                    MimeType = "application/vnd.google-apps.folder"
-
-                };
-                var requestCRM = service.Files.Create(fileMetadataCRM);
-                requestCRM.Fields = "id";
-                var fileCRM = requestCRM.Execute();
-
-                var fileMetadata = new Google.Apis.Drive.v3.Data.File()
-                {
-                    Name = name,
-                    MimeType = "application/vnd.google-apps.folder",
-                    Parents = new List<string>
-                    {
-                       fileCRM.Id
-                    }
-                };
-                var request = service.Files.Create(fileMetadata);
-                request.Fields = "id";
-                var file = request.Execute();
-
-                return file.Id;
-            }
-
-        }
+       
         public JsonResult UploadFile(int Order)
         {
             var service = GetService();
@@ -1461,6 +1419,86 @@ namespace WebApplicationMVC.Controllers
             byte[] arr = new AnalyticsController().GetReport(ordersIds);
             return File(arr, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Персональний звіт.xlsx");
         }
-       
-    }
+
+        public DriveService GetService()
+        {
+            string[] Scopes = { DriveService.Scope.Drive };
+            string ApplicationName = "Drive API .NET Quickstart";
+            UserCredential credential;
+            using (var stream = new FileStream(Server.MapPath(("~/Content/API/DriveCredentials.json")), FileMode.Open, FileAccess.Read))
+            {
+                String FilePath = Server.MapPath(("~/Content/API/DriveServiceCredentials.json"));
+
+                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
+                    GoogleClientSecrets.Load(stream).Secrets,
+                    Scopes,
+                    "user",
+                    CancellationToken.None,
+                    new FileDataStore(FilePath, true)).Result;
+            }
+            // Create Drive API service.
+            var service = new DriveService(new BaseClientService.Initializer()
+            {
+                HttpClientInitializer = credential,
+                ApplicationName = ApplicationName,
+            });
+            return service;
+        }
+        public string CreateFolder(string name)
+        {
+            var service = GetService();
+            var list = service.Files.List();
+            list.Q = "name contains 'CRM'";
+            var files = list.Execute();
+            string Directory = "1BMCcePzGKZ4XiRgGkmh2eh4ZuI3o16EV";
+            if (files.Files.Count >= 1)
+            {
+                var fileMetadata = new Google.Apis.Drive.v3.Data.File()
+                {
+                    Name = name,
+                    Parents = new List<string>
+                    {
+                       Directory
+                    }
+                    ,
+                    MimeType = "application/vnd.google-apps.folder"
+                };
+
+
+
+                var request = service.Files.Create(fileMetadata);
+                request.Fields = "id,name";
+                var f = request.Execute();
+                return f.Id;
+            }
+            else
+            {
+                var fileMetadataCRM = new Google.Apis.Drive.v3.Data.File()
+                {
+                    Name = "CRM",
+                    MimeType = "application/vnd.google-apps.folder"
+
+                };
+                var requestCRM = service.Files.Create(fileMetadataCRM);
+                requestCRM.Fields = "id";
+                var fileCRM = requestCRM.Execute();
+
+                var fileMetadata = new Google.Apis.Drive.v3.Data.File()
+                {
+                    Name = name,
+                    MimeType = "application/vnd.google-apps.folder",
+                    Parents = new List<string>
+                    {
+                       fileCRM.Id
+                    }
+                };
+                var request = service.Files.Create(fileMetadata);
+                request.Fields = "id";
+                var file = request.Execute();
+
+                return file.Id;
+
+            }
+        }
+     }
 }
