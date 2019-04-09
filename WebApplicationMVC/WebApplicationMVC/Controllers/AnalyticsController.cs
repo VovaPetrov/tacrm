@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 using System.Web.Mvc;
+using WebApplicationMVC.Entities;
 using WebApplicationMVC.Models;
 namespace WebApplicationMVC.Controllers
 {
@@ -60,9 +61,9 @@ namespace WebApplicationMVC.Controllers
                     
 
                     var objects = db.ObjectLists.Where(e => ordersIds.Contains(e.OrderId)).ToList();
-                   
-                        for (int i = 0; i < objects.Count; i++)
-                        {
+
+                    for (int i = 0; i < objects.Count; i++)
+                    {
                         int orderId = objects[i].OrderId;
                         var order = db.Orders.Where(e => e.Id == orderId).FirstOrDefault();
                         Cell cell = InsertCellInWorksheet("A", startY + i, worksheetPart);
@@ -71,7 +72,7 @@ namespace WebApplicationMVC.Controllers
                         cell.DataType = new EnumValue<CellValues>(CellValues.SharedString);
 
                         cell = InsertCellInWorksheet("B", startY + i, worksheetPart);
-                        cell.CellValue = new CellValue(DateUkrFormat(order.CreatedDate.Value));
+                        cell.CellValue = new CellValue(DateUkrFormat(order.CreatedDate));
                         cell.DataType = new EnumValue<CellValues>(CellValues.String);
 
 
@@ -81,8 +82,8 @@ namespace WebApplicationMVC.Controllers
                         if (order.MetaId.HasValue)
                         {
                             var meta = db.Metas.Where(e => e.Id == order.MetaId.Value).FirstOrDefault();
-                            if(meta!=null)
-                            cell.CellValue = new CellValue(meta.Content);
+                            if (meta != null)
+                                cell.CellValue = new CellValue(meta.Content);
                         }
                         cell.DataType = new EnumValue<CellValues>(CellValues.String);
 
@@ -95,246 +96,246 @@ namespace WebApplicationMVC.Controllers
                         cell.DataType = new EnumValue<CellValues>(CellValues.String);
 
 
-                            cell = InsertCellInWorksheet("E", startY + i, worksheetPart);
-                            if (order.SourceId.HasValue)
-                            {
-                                var source = db.Sources.Where(e => e.Id == order.SourceId.Value).FirstOrDefault();
-                                if(source!=null)
+                        cell = InsertCellInWorksheet("E", startY + i, worksheetPart);
+                        if (order.SourceId.HasValue)
+                        {
+                            var source = db.Sources.Where(e => e.Id == order.SourceId.Value).FirstOrDefault();
+                            if (source != null)
                                 cell.CellValue = new CellValue(source.SourceName);
-                            }
-                            cell.DataType = new EnumValue<CellValues>(CellValues.String);
+                        }
+                        cell.DataType = new EnumValue<CellValues>(CellValues.String);
 
-                            cell = InsertCellInWorksheet("F", startY + i, worksheetPart);
-                            if (order.BranchId.HasValue)
-                            {
-                                var branch = db.Branches.Where(e => e.Id == order.BranchId.Value).FirstOrDefault();
-                                if(branch!=null)
+                        cell = InsertCellInWorksheet("F", startY + i, worksheetPart);
+                        if (order.BranchId.HasValue)
+                        {
+                            var branch = db.Branches.Where(e => e.Id == order.BranchId.Value).FirstOrDefault();
+                            if (branch != null)
                                 cell.CellValue = new CellValue(branch.BranchName);
-                            }
+                        }
+                        cell.DataType = new EnumValue<CellValues>(CellValues.String);
+
+
+                        var permisions = db.Performerses.Where(e => e.OrderId == order.Id).ToList();
+                        StringBuilder strUsers = new StringBuilder("");
+                        foreach (var user in permisions)
+                        {
+                            var User = db.Users.Where(e => e.Id == user.UserId).FirstOrDefault();
+                            strUsers.Append($"{User.LastName} {User.FirstName} {User.MiddleName}, ");
+                        }
+                        if (strUsers.Length > 2)
+                            strUsers.Remove(strUsers.Length - 2, 2);
+                        cell = InsertCellInWorksheet("G", startY + i, worksheetPart);
+                        cell.CellValue = new CellValue(strUsers.ToString());
+                        cell.DataType = new EnumValue<CellValues>(CellValues.String);
+
+
+
+
+                        if (order.PropsId.HasValue)
+                        {
+                            var Props = db.Propses.Where(e => e.Id == order.PropsId).FirstOrDefault();
+                            cell = InsertCellInWorksheet("H", startY + i, worksheetPart);
+                            if (Props != null)
+                                cell.CellValue = new CellValue(Props.Content);
                             cell.DataType = new EnumValue<CellValues>(CellValues.String);
+                        }
 
 
-                            var permisions = db.Performerses.Where(e => e.OrderId == order.Id).ToList();
-                            StringBuilder strUsers = new StringBuilder("");
-                            foreach (var user in permisions)
-                            {
-                                var User = db.Users.Where(e => e.Id == user.UserId).FirstOrDefault();
-                                strUsers.Append($"{User.LastName} {User.FirstName} {User.MiddleName}, ");
-                            }
-                            if (strUsers.Length > 2)
-                                strUsers.Remove(strUsers.Length - 2, 2);
-                            cell = InsertCellInWorksheet("G", startY + i, worksheetPart);
-                            cell.CellValue = new CellValue(strUsers.ToString());
-                            cell.DataType = new EnumValue<CellValues>(CellValues.String);
+                        StringBuilder str = new StringBuilder("");
+                        var dateD = db.DateDocuments.Where(e => e.OrderId == orderId).ToList();
+                        for (int j = 0; j < dateD.Count; j++)
+                        {
+                            var date = dateD[j].DateOfDocument;
+                            if (date.HasValue)
+                                str.Append(DateUkrFormat(date.Value) + " ");
+                        }
+                        cell = InsertCellInWorksheet("I", startY + i, worksheetPart);
+                        cell.CellValue = new CellValue(str.ToString());
+                        cell.DataType = new EnumValue<CellValues>(CellValues.String);
 
-
-
-
-                            if (order.PropsId.HasValue)
-                            {
-                                var Props = db.Propses.Where(e => e.Id == order.PropsId).FirstOrDefault();
-                                cell = InsertCellInWorksheet("H", startY + i, worksheetPart);
-                                if (Props != null)
-                                    cell.CellValue = new CellValue(Props.Content);
-                                cell.DataType = new EnumValue<CellValues>(CellValues.String);
-                            }
-                    
-
-                            StringBuilder str = new StringBuilder("");
-                            var dateD = db.DateDocuments.Where(e => e.OrderId == orderId).ToList();
-                            for (int j = 0; j < dateD.Count; j++)
-                            {
-                                var date = dateD[j].DateOfDocument;
-                                if (date.HasValue)
-                                    str.Append(DateUkrFormat(date.Value) + " ");
-                            }
-                            cell = InsertCellInWorksheet("I", startY + i, worksheetPart);
-                            cell.CellValue = new CellValue(str.ToString());
-                            cell.DataType = new EnumValue<CellValues>(CellValues.String);
-
-                            cell = InsertCellInWorksheet("J", startY + i, worksheetPart);
-                            if(order.DateOfExpert.HasValue)
-                                cell.CellValue = new CellValue(DateUkrFormat(order.DateOfExpert.Value));
-                            cell.DataType = new EnumValue<CellValues>(CellValues.String);
+                        cell = InsertCellInWorksheet("J", startY + i, worksheetPart);
+                        if (order.DateOfExpert.HasValue)
+                            cell.CellValue = new CellValue(DateUkrFormat(order.DateOfExpert.Value));
+                        cell.DataType = new EnumValue<CellValues>(CellValues.String);
 
                         decimal sum = 0;
-                            var prices = new List<Price>();
-                            if (order.PriceListId.HasValue)
+                        var prices = new List<Price>();
+                        if (order.PriceListId.HasValue)
+                        {
+                            prices = db.Prices.Where(e => e.PriceListId == order.PriceListId.Value).ToList();
+                            foreach (var p in prices)
                             {
-                                prices = db.Prices.Where(e => e.PriceListId == order.PriceListId.Value).ToList();
-                                foreach (var p in prices)
+                                sum += p.Value;
+                            }
+                        }
+                        cell = InsertCellInWorksheet("K", startY + i, worksheetPart);
+                        cell.CellValue = new CellValue(sum + "");
+                        cell.DataType = new EnumValue<CellValues>(CellValues.String);
+
+                        string IsPaid = "Ні";
+                        if (order.IsPaid.HasValue && order.IsPaid.Value)
+                            IsPaid = "Так";
+                        cell = InsertCellInWorksheet("L", startY + i, worksheetPart);
+                        cell.CellValue = new CellValue(IsPaid);
+                        cell.DataType = new EnumValue<CellValues>(CellValues.String);
+
+                        cell = InsertCellInWorksheet("M", startY + i, worksheetPart);
+                        if (order.DateOfPay.HasValue)
+                            cell.CellValue = new CellValue(DateUkrFormat(order.DateOfPay.Value));
+                        cell.DataType = new EnumValue<CellValues>(CellValues.String);
+
+                        if (order.PropsId.HasValue)
+                        {
+                            var Props = db.Propses.Where(e => e.Id == order.PropsId).FirstOrDefault();
+                            cell = InsertCellInWorksheet("N", startY + i, worksheetPart);
+                            if (Props != null)
+                                cell.CellValue = new CellValue(Props.Content);
+                            cell.DataType = new EnumValue<CellValues>(CellValues.String);
+                        }
+
+                        //Client
+                        int clientId = order.ClientId;
+                        var client = db.Clients.Where(e => e.Id == clientId).FirstOrDefault();
+                        if (client != null)
+                        {
+                            cell = InsertCellInWorksheet("O", startY + i, worksheetPart);
+                            cell.CellValue = new CellValue(client.FullName);
+                            cell.DataType = new EnumValue<CellValues>(CellValues.String); //nopqr
+                            cell = InsertCellInWorksheet("P", startY + i, worksheetPart);
+                            cell.CellValue = new CellValue(client.IPN_EDRPOY);
+                            cell.DataType = new EnumValue<CellValues>(CellValues.String);
+                            cell = InsertCellInWorksheet("Q", startY + i, worksheetPart);
+                            cell.CellValue = new CellValue(client.Phone);
+                            cell.DataType = new EnumValue<CellValues>(CellValues.String);
+                            cell = InsertCellInWorksheet("R", startY + i, worksheetPart);
+                            cell.CellValue = new CellValue(client.Email);
+                            cell.DataType = new EnumValue<CellValues>(CellValues.String);
+                            cell = InsertCellInWorksheet("S", startY + i, worksheetPart);
+                            cell.CellValue = new CellValue(client.Props);
+                            cell.DataType = new EnumValue<CellValues>(CellValues.String);
+                        }
+                        //Owner
+                        //int ownerId = order.OwnerId;
+                        //var owner = db.Owners.Where(e => e.Id == ownerId).FirstOrDefault();
+                        //if (owner != null)//stuvw
+                        //{
+                        //    cell = InsertCellInWorksheet("T", startY + i, worksheetPart);
+                        //    cell.CellValue = new CellValue(owner.FullName);
+                        //    cell.DataType = new EnumValue<CellValues>(CellValues.String);
+                        //    cell = InsertCellInWorksheet("U", startY + i, worksheetPart);
+                        //    cell.CellValue = new CellValue(owner.IPN_EDRPOY);
+                        //    cell.DataType = new EnumValue<CellValues>(CellValues.String);
+                        //    cell = InsertCellInWorksheet("V", startY + i, worksheetPart);
+                        //    cell.CellValue = new CellValue(owner.Phone);
+                        //    cell.DataType = new EnumValue<CellValues>(CellValues.String);
+                        //    cell = InsertCellInWorksheet("W", startY + i, worksheetPart);
+                        //    cell.CellValue = new CellValue(owner.Email);
+                        //    cell.DataType = new EnumValue<CellValues>(CellValues.String);
+                        //    cell = InsertCellInWorksheet("X", startY + i, worksheetPart);
+                        //    cell.CellValue = new CellValue(owner.Props);
+                        //    cell.DataType = new EnumValue<CellValues>(CellValues.String);
+
+                        //}
+
+                        int objId = objects[i].ObjectId;
+                        var @object = db.Objects.Where(e => e.Id == objId).FirstOrDefault();
+                        if (@object != null)
+                        {
+                            cell = InsertCellInWorksheet("Y", startY + i, worksheetPart);
+                            cell.CellValue = new CellValue(@object.Name);
+                            cell.DataType = new EnumValue<CellValues>(CellValues.String);
+
+                            int objList = objects[i].Id;
+                            var values = db.ObjectValues.Where(e => e.ObjectListId == objList).ToList();
+                            var desks = db.ObjectDesces.Where(e => e.ObjectTypeId == objId).ToList();
+
+                            cell = InsertCellInWorksheet("Z", startY + i, worksheetPart);
+                            StringBuilder strDesk = new StringBuilder("");
+                            foreach (var desk in desks)
+                            {
+                                var value = values.Where(e => e.ObjectDeskId == desk.Id).FirstOrDefault();
+                                if (value != null)
+                                    strDesk.Append(", " + desk.Name + " - " + value.Value);
+                            }
+                            if (strDesk.Length >= 2)
+                                strDesk.Remove(0, 2);
+                            cell.CellValue = new CellValue(strDesk.ToString());
+                            cell.DataType = new EnumValue<CellValues>(CellValues.String);
+
+                            StringBuilder strAddress = new StringBuilder("");
+
+                            var obl = desks.Where(e => e.Name.Contains("Область")).FirstOrDefault();
+                            if (obl != null)
+                            {
+                                var OblValue = values.Where(e => e.ObjectDeskId == obl.Id).FirstOrDefault();
+                                strAddress.Append("Область - " + OblValue.Value);
+                                //
+                                var Reg = desks.Where(e => e.Name.Contains("Район")).FirstOrDefault();
+                                if (Reg != null)
                                 {
-                                    sum += p.Value;
+                                    var RegValue = values.Where(e => e.ObjectDeskId == Reg.Id).FirstOrDefault();
+                                    strAddress.Append(", Район - " + RegValue.Value);
                                 }
-                            }
-                            cell = InsertCellInWorksheet("K", startY + i, worksheetPart);
-                            cell.CellValue = new CellValue(sum + "");
-                            cell.DataType = new EnumValue<CellValues>(CellValues.String);
-
-                            string IsPaid = "Ні";
-                            if (order.IsPaid.HasValue && order.IsPaid.Value)
-                                IsPaid = "Так";
-                            cell = InsertCellInWorksheet("L", startY + i, worksheetPart);
-                            cell.CellValue = new CellValue(IsPaid);
-                            cell.DataType = new EnumValue<CellValues>(CellValues.String);
-
-                            cell = InsertCellInWorksheet("M", startY + i, worksheetPart);
-                            if (order.DateOfPay.HasValue)
-                                cell.CellValue = new CellValue(DateUkrFormat(order.DateOfPay.Value));
-                            cell.DataType = new EnumValue<CellValues>(CellValues.String);
-
-                            if (order.PropsId.HasValue)
-                            {
-                                var Props = db.Propses.Where(e => e.Id == order.PropsId).FirstOrDefault();
-                                cell = InsertCellInWorksheet("N", startY + i, worksheetPart);
-                                if (Props != null)
-                                    cell.CellValue = new CellValue(Props.Content);
-                                cell.DataType = new EnumValue<CellValues>(CellValues.String);
-                            }
-
-                            //Client
-                            int clientId = order.ClientId;
-                            var client = db.Clients.Where(e => e.Id == clientId).FirstOrDefault();
-                            if (client != null)
-                            {
-                                cell = InsertCellInWorksheet("O", startY + i, worksheetPart);
-                                cell.CellValue = new CellValue(client.FullName);
-                                cell.DataType = new EnumValue<CellValues>(CellValues.String); //nopqr
-                                cell = InsertCellInWorksheet("P", startY + i, worksheetPart);
-                                cell.CellValue = new CellValue(client.IPN_EDRPOY);
-                                cell.DataType = new EnumValue<CellValues>(CellValues.String);
-                                cell = InsertCellInWorksheet("Q", startY + i, worksheetPart);
-                                cell.CellValue = new CellValue(client.Phone);
-                                cell.DataType = new EnumValue<CellValues>(CellValues.String);
-                                cell = InsertCellInWorksheet("R", startY + i, worksheetPart);
-                                cell.CellValue = new CellValue(client.Email);
-                                cell.DataType = new EnumValue<CellValues>(CellValues.String);
-                                cell = InsertCellInWorksheet("S", startY + i, worksheetPart);
-                                cell.CellValue = new CellValue(client.Props);
-                                cell.DataType = new EnumValue<CellValues>(CellValues.String);
-                            }
-                            //Owner
-                            int ownerId = order.OwnerId;
-                            var owner = db.Owners.Where(e => e.Id == ownerId).FirstOrDefault();
-                            if (owner != null)//stuvw
-                            {
-                                cell = InsertCellInWorksheet("T", startY + i, worksheetPart);
-                                cell.CellValue = new CellValue(owner.FullName);
-                                cell.DataType = new EnumValue<CellValues>(CellValues.String);
-                                cell = InsertCellInWorksheet("U", startY + i, worksheetPart);
-                                cell.CellValue = new CellValue(owner.IPN_EDRPOY);
-                                cell.DataType = new EnumValue<CellValues>(CellValues.String);
-                                cell = InsertCellInWorksheet("V", startY + i, worksheetPart);
-                                cell.CellValue = new CellValue(owner.Phone);
-                                cell.DataType = new EnumValue<CellValues>(CellValues.String);
-                                cell = InsertCellInWorksheet("W", startY + i, worksheetPart);
-                                cell.CellValue = new CellValue(owner.Email);
-                                cell.DataType = new EnumValue<CellValues>(CellValues.String);
-                                cell = InsertCellInWorksheet("X", startY + i, worksheetPart);
-                                cell.CellValue = new CellValue(owner.Props);
-                                cell.DataType = new EnumValue<CellValues>(CellValues.String);
-
-                            }
-
-                            int objId = objects[i].ObjectId;
-                            var @object = db.Objects.Where(e => e.Id == objId).FirstOrDefault();
-                            if (@object != null)
-                            {
-                                cell = InsertCellInWorksheet("Y", startY + i, worksheetPart);
-                                cell.CellValue = new CellValue(@object.Name);
-                                cell.DataType = new EnumValue<CellValues>(CellValues.String);
-
-                                int objList = objects[i].Id;
-                                var values = db.ObjectValues.Where(e => e.ObjectListId == objList).ToList();
-                                var desks = db.ObjectDesces.Where(e => e.ObjectTypeId == objId).ToList();
-
-                                cell = InsertCellInWorksheet("Z", startY + i, worksheetPart);
-                                StringBuilder strDesk = new StringBuilder("");
-                                foreach (var desk in desks)
+                                //
+                                var Settlement = desks.Where(e => e.Name.Contains("Населений пункт")).FirstOrDefault();
+                                if (Settlement != null)
                                 {
-                                    var value = values.Where(e => e.ObjectDeskId == desk.Id).FirstOrDefault();
-                                    if (value != null)
-                                        strDesk.Append(", " + desk.Name + " - " + value.Value);
+                                    var SetValue = values.Where(e => e.ObjectDeskId == Settlement.Id).FirstOrDefault();
+                                    strAddress.Append(", Населений пункт - " + SetValue.Value);
                                 }
-                                if (strDesk.Length >= 2)
-                                    strDesk.Remove(0, 2);
-                                cell.CellValue = new CellValue(strDesk.ToString());
-                                cell.DataType = new EnumValue<CellValues>(CellValues.String);
-
-                                StringBuilder strAddress = new StringBuilder("");
-
-                                var obl = desks.Where(e => e.Name.Contains("Область")).FirstOrDefault();
-                                if (obl != null)
+                                var street = desks.Where(e => e.Name.Contains("вул") || e.Name.Contains("Вул")).FirstOrDefault();
+                                if (street != null)
                                 {
-                                    var OblValue = values.Where(e => e.ObjectDeskId == obl.Id).FirstOrDefault();
-                                    strAddress.Append("Область - " + OblValue.Value);
-                                    //
-                                    var Reg = desks.Where(e => e.Name.Contains("Район")).FirstOrDefault();
-                                    if (Reg != null)
-                                    {
-                                        var RegValue = values.Where(e => e.ObjectDeskId == Reg.Id).FirstOrDefault();
-                                        strAddress.Append(", Район - " + RegValue.Value);
-                                    }
-                                    //
-                                    var Settlement = desks.Where(e => e.Name.Contains("Населений пункт")).FirstOrDefault();
-                                    if (Settlement != null)
-                                    {
-                                        var SetValue = values.Where(e => e.ObjectDeskId == Settlement.Id).FirstOrDefault();
-                                        strAddress.Append(", Населений пункт - " + SetValue.Value);
-                                    }
-                                    var street = desks.Where(e => e.Name.Contains("вул") || e.Name.Contains("Вул")).FirstOrDefault();
-                                    if (street != null)
-                                    {
-                                        int Street = street.Id;
-                                        var StreetValue = values.Where(e => e.ObjectDeskId == Street).FirstOrDefault();
-                                        strAddress.Append(", Вулиця - " + StreetValue.Value);
-                                    }
-                                    var build = desks.Where(e => e.Name.Contains("буд") || e.Name.Contains("Буд")).FirstOrDefault();
-                                    if (build != null)
-                                    {
-                                        int Build = build.Id;
-                                        var BuildValue = values.Where(e => e.ObjectDeskId == Build).FirstOrDefault();
-                                        strAddress.Append(", Будинок - " + BuildValue.Value);
-                                    }
-                                    var flat = desks.Where(e => e.Name.Contains("кв") || e.Name.Contains("Кв")).FirstOrDefault();
-                                    if (flat != null)
-                                    {
-                                        int Flat = flat.Id;
-                                        var FlatValue = values.Where(e => e.ObjectDeskId == Flat).FirstOrDefault();
-                                        strAddress.Append(", Квартира - " + FlatValue.Value);
-                                    }
-
-
-
-                                    cell = InsertCellInWorksheet("AA", startY + i, worksheetPart);
-                                    cell.CellValue = new CellValue(strAddress.ToString());
-                                    cell.DataType = new EnumValue<CellValues>(CellValues.String);
+                                    int Street = street.Id;
+                                    var StreetValue = values.Where(e => e.ObjectDeskId == Street).FirstOrDefault();
+                                    strAddress.Append(", Вулиця - " + StreetValue.Value);
+                                }
+                                var build = desks.Where(e => e.Name.Contains("буд") || e.Name.Contains("Буд")).FirstOrDefault();
+                                if (build != null)
+                                {
+                                    int Build = build.Id;
+                                    var BuildValue = values.Where(e => e.ObjectDeskId == Build).FirstOrDefault();
+                                    strAddress.Append(", Будинок - " + BuildValue.Value);
+                                }
+                                var flat = desks.Where(e => e.Name.Contains("кв") || e.Name.Contains("Кв")).FirstOrDefault();
+                                if (flat != null)
+                                {
+                                    int Flat = flat.Id;
+                                    var FlatValue = values.Where(e => e.ObjectDeskId == Flat).FirstOrDefault();
+                                    strAddress.Append(", Квартира - " + FlatValue.Value);
                                 }
 
+
+
+                                cell = InsertCellInWorksheet("AA", startY + i, worksheetPart);
+                                cell.CellValue = new CellValue(strAddress.ToString());
+                                cell.DataType = new EnumValue<CellValues>(CellValues.String);
                             }
-                       
 
-                        cell = InsertCellInWorksheet("AB", startY + i, worksheetPart);
-                            cell.CellValue = new CellValue(order.FullNameWatcher ?? "");
-                            cell.DataType = new EnumValue<CellValues>(CellValues.String);
+                        }
 
-                            cell = InsertCellInWorksheet("AC", startY + i, worksheetPart);
-                            if (order.OverWatch.HasValue)
-                                cell.CellValue = new CellValue(DateUkrFormat(order.OverWatch.Value));
-                            else
-                                cell.CellValue = new CellValue("");
-                            cell.DataType = new EnumValue<CellValues>(CellValues.String);
 
-                            cell = InsertCellInWorksheet("AD", startY + i, worksheetPart);
-                            if (order.PriceOverWatch.HasValue)
-                                cell.CellValue = new CellValue(order.PriceOverWatch.Value.ToString());
-                            else
-                                cell.CellValue = new CellValue("");
-                            cell.DataType = new EnumValue<CellValues>(CellValues.String);
+                        //cell = InsertCellInWorksheet("AB", startY + i, worksheetPart);
+                        ////cell.CellValue = new CellValue(order.FullNameWatcher ?? "");
+                        //cell.DataType = new EnumValue<CellValues>(CellValues.String);
 
-                            cell = InsertCellInWorksheet("AE", startY + i, worksheetPart);
-                            if (order.IsPaidOverWatch)
-                                cell.CellValue = new CellValue("Так");
+                        //cell = InsertCellInWorksheet("AC", startY + i, worksheetPart);
+                        ////if (order.OverWatch.HasValue)
+                        ////    cell.CellValue = new CellValue(DateUkrFormat(order.OverWatch.Value));
+                        ////else
+                        ////    cell.CellValue = new CellValue("");
+                        //cell.DataType = new EnumValue<CellValues>(CellValues.String);
+
+                        //cell = InsertCellInWorksheet("AD", startY + i, worksheetPart); 
+                            //if (order.PriceOverWatch.HasValue)
+                            //    cell.CellValue = new CellValue(order.PriceOverWatch.Value.ToString());
+                            //else
+                            //    cell.CellValue = new CellValue("");
+                            //cell.DataType = new EnumValue<CellValues>(CellValues.String);
+
+                            //cell = InsertCellInWorksheet("AE", startY + i, worksheetPart);
+                            //if (order.IsPaidOverWatch)
+                            //    cell.CellValue = new CellValue("Так");
                             else
                                 cell.CellValue = new CellValue("Ні");
                             cell.DataType = new EnumValue<CellValues>(CellValues.String);
@@ -498,18 +499,18 @@ namespace WebApplicationMVC.Controllers
                             cell.DataType = new EnumValue<CellValues>(CellValues.String);
                         }
                         //Owner
-                        int ownerId = order.OwnerId;
-                        var owner = db.Owners.Where(e => e.Id == ownerId).FirstOrDefault();
-                        if (owner != null)
-                        {
-                            cell = InsertCellInWorksheet("C", startY + i, worksheetPart);
-                            cell.CellValue = new CellValue(owner.FullName ?? "");
-                            cell.DataType = new EnumValue<CellValues>(CellValues.String);
+                        //int ownerId = order.OwnerId;
+                        //var owner = db.Owners.Where(e => e.Id == ownerId).FirstOrDefault();
+                        //if (owner != null)
+                        //{
+                        //    cell = InsertCellInWorksheet("C", startY + i, worksheetPart);
+                        //    cell.CellValue = new CellValue(owner.FullName ?? "");
+                        //    cell.DataType = new EnumValue<CellValues>(CellValues.String);
 
-                            cell = InsertCellInWorksheet("D", startY + i, worksheetPart);
-                            cell.CellValue = new CellValue(owner.IPN_EDRPOY??"");
-                            cell.DataType = new EnumValue<CellValues>(CellValues.String);
-                        }
+                        //    cell = InsertCellInWorksheet("D", startY + i, worksheetPart);
+                        //    cell.CellValue = new CellValue(owner.IPN_EDRPOY??"");
+                        //    cell.DataType = new EnumValue<CellValues>(CellValues.String);
+                        //}
                         //Object
                         int objId = objects[i].ObjectId;
                         var @object = db.Objects.Where(e => e.Id == objId).FirstOrDefault();
@@ -633,19 +634,19 @@ namespace WebApplicationMVC.Controllers
                             cell.DataType = new EnumValue<CellValues>(CellValues.SharedString);
                         }
                         //Owner
-                        int ownerId = order.OwnerId;
-                        var owner = db.Owners.Where(e => e.Id == ownerId).FirstOrDefault();
-                        if (owner != null)
-                        {
-                            cell = InsertCellInWorksheet("D", startY + i, worksheetPart);
-                            index = InsertSharedStringItem(owner.FullName ?? "", shareStringPart);
-                            cell.CellValue = new CellValue(index.ToString());
-                            cell.DataType = new EnumValue<CellValues>(CellValues.SharedString);
-                            cell = InsertCellInWorksheet("E", startY + i, worksheetPart);
-                            index = InsertSharedStringItem(owner.IPN_EDRPOY, shareStringPart);
-                            cell.CellValue = new CellValue(index.ToString());
-                            cell.DataType = new EnumValue<CellValues>(CellValues.SharedString);
-                        }
+                        //int ownerId = order.OwnerId;
+                        //var owner = db.Owners.Where(e => e.Id == ownerId).FirstOrDefault();
+                        //if (owner != null)
+                        //{
+                        //    cell = InsertCellInWorksheet("D", startY + i, worksheetPart);
+                        //    index = InsertSharedStringItem(owner.FullName ?? "", shareStringPart);
+                        //    cell.CellValue = new CellValue(index.ToString());
+                        //    cell.DataType = new EnumValue<CellValues>(CellValues.SharedString);
+                        //    cell = InsertCellInWorksheet("E", startY + i, worksheetPart);
+                        //    index = InsertSharedStringItem(owner.IPN_EDRPOY, shareStringPart);
+                        //    cell.CellValue = new CellValue(index.ToString());
+                        //    cell.DataType = new EnumValue<CellValues>(CellValues.SharedString);
+                        //}
                         //Object
                         int objId = objects[i].ObjectId;
                         var @object = db.Objects.Where(e => e.Id == objId).FirstOrDefault();
@@ -748,11 +749,11 @@ namespace WebApplicationMVC.Controllers
                             }
                         }
                         cell = InsertCellInWorksheet("P", startY + i, worksheetPart);
-                        cell.CellValue = new CellValue(DateUkrFormat(order.CreatedDate.Value));
+                        cell.CellValue = new CellValue(DateUkrFormat(order.CreatedDate));
                         cell.DataType = new EnumValue<CellValues>(CellValues.String);
 
                         cell = InsertCellInWorksheet("Q", startY + i, worksheetPart);
-                        cell.CellValue = new CellValue(DateUkrFormat(order.CreatedDate.Value));
+                        cell.CellValue = new CellValue(DateUkrFormat(order.CreatedDate));
                         cell.DataType = new EnumValue<CellValues>(CellValues.String);
 
                         cell = InsertCellInWorksheet("R", startY + i, worksheetPart);
@@ -783,18 +784,18 @@ namespace WebApplicationMVC.Controllers
                         cell.DataType = new EnumValue<CellValues>(CellValues.String);
 
                         cell = InsertCellInWorksheet("V", startY + i, worksheetPart);
-                        if (order.OverWatch.HasValue)                  
-                            cell.CellValue = new CellValue(DateUkrFormat(order.OverWatch.Value));
+                        //if (order.OverWatch.HasValue)                  
+                        //    cell.CellValue = new CellValue(DateUkrFormat(order.OverWatch.Value));
                         cell.DataType = new EnumValue<CellValues>(CellValues.String);
 
                         DateTime dateTakeToWork;
                         List<DateTime> dates = new List<DateTime>();
                         if (order.DateOfPay.HasValue)
                             dates.Add(order.DateOfPay.Value);
-                        if (order.OverWatch.HasValue)
-                            dates.Add(order.OverWatch.Value);
-                        if (order.CreatedDate.HasValue)
-                            dates.Add(order.CreatedDate.Value);
+                        //if (order.OverWatch.HasValue)
+                        //    dates.Add(order.OverWatch.Value);
+         
+                            dates.Add(order.CreatedDate);
 
                         dateTakeToWork = dates.Max();
                         

@@ -1,5 +1,47 @@
 ﻿$(document).ready(
     function () {
+
+        $("select[name='ClientType']").change(function (e) {
+            if ($(this).val() == "false") {
+                $("#PhysicalClient").show();
+                $("#LegalClient").hide();
+            }
+            else {
+                $("#PhysicalClient").hide();
+                $("#LegalClient").show();
+            }
+        });
+
+        $("#addOwner").on("click", function () {
+            $("#OwnersContainer").append(`
+             <div class= "row Owner" >
+                <div class="form-group col-md-4">
+                    <input type="text" class="form-control" name="OwnerName" placeholder="Назва/ПІБ" />
+                </div>
+                <div class="form-group col-md-4">
+                    <input type="number" class="form-control" name="OwnerIPN" placeholder="ЄДРПОУ/ІПН" />
+                </div>
+                <div class="form-group col-md-3">
+                    <input type="text" class="form-control" name="OwnerPart" placeholder="Частка" />
+                </div>
+                <div class="form-group col-md-1">
+                    <span class='delOwner'> <i class='fas fa-times'></i></span>
+                </div>
+            </div>
+                `);
+        });
+
+        $("#OwnersContainer").delegate(".delOwner","click", function () {
+            $(this).parent().parent().remove();
+        });
+
+        $(".filesLink").click(function (e) {
+            e.stopPropagation();
+            var url = $(this).data("url");
+            window.open(url, '_blank');
+            return false;
+        });
+
         $("#delOrder").click(
             function () {
                 var ans = confirm("Бажаєте видалити замовлення?");
@@ -106,12 +148,6 @@
                         $("input[name='TotalPrice']").val(totalD);
                     }
                 );
-            });
-
-        $("#orderTable tr").click(
-            function () {
-                var OrderId = $(this).find(".OrderId").text();
-                location.href = "/Order/Get?Id=" + OrderId;
             });
 
         $("#addOrder").click(
@@ -472,29 +508,6 @@
 
             });
 
-        $.datepicker.regional['ru'] = {
-            closeText: 'Закрыть',
-            prevText: 'Пред',
-            nextText: 'След',
-            currentText: 'Сегодня',
-            monthNames: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-                'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
-            monthNamesShort: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн',
-                'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'],
-            dayNames: ['воскресенье', 'понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота'],
-            dayNamesShort: ['вск', 'пнд', 'втр', 'срд', 'чтв', 'птн', 'сбт'],
-            dayNamesMin: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'],
-            weekHeader: 'Нед',
-            dateFormat: 'mm/dd/yy',
-            firstDay: 1,
-            isRTL: false,
-            showMonthAfterYear: false,
-            yearSuffix: ''
-        };
-        $.datepicker.setDefaults($.datepicker.regional['ru']);
-
-        $(".datepickerFrom").datepicker();
-        $(".datepickerTo").datepicker();
 
     });
 

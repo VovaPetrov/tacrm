@@ -93,7 +93,7 @@
         </div>
     </div>
     <div class="container">
-       
+
         <div class="row">
             <div class="form-group col-md-4">
                 <h5>Виконавці</h5>
@@ -104,7 +104,7 @@
                     <input type="checkbox" value="@user.Id" name="UserId" @if (user.Id == Id) { @: checked
                            } /> @fullName <br />
 
-                    }
+                }
             </div>
             <div class="form-group col-md-4">
                 <h5>Підписанти</h5>
@@ -114,7 +114,7 @@
 
                     <input type="checkbox" value="@user.Id" name="SignatoryId" /> @fullName <br />
 
-                    }
+                }
             </div>
         </div>
     </div>
@@ -122,20 +122,50 @@
         <h5>Замовник</h5>
         <div class="row">
             <div class="form-group col-md-4">
-                <input type="text" class="form-control" required name="ClientName" placeholder="Назва/ПІБ" />
+                <select name="ClientType" class="form-control">
+                    <option value="false">Фізична особа</option>
+                    <option value="true">Юридична особа</option>
+                </select>
+            </div>
+        </div>
+        <div class="row" id="PhysicalClient">
+            <div class="form-group col-md-4">
+                <input type="text" class="form-control" required name="ClientName" placeholder="ПІБ" />
             </div>
             <div class="form-group col-md-4">
-                <input type="text" class="form-control" name="IPN" placeholder="ЄДРПОУ/ІПН" />
+                <input type="text" class="form-control" name="IPN" placeholder="ІПН" />
             </div>
             <div class="form-group col-md-4">
-                <input type="tel" class="form-control" required name="Tel" placeholder="Kонтактний номер телефону" />
+                <input type="tel" class="form-control" required name="Tel" placeholder="Номер телефону" />
             </div>
             <div class="form-group col-md-4">
                 <input type="email" class="form-control" name="Email" placeholder="Eлектронна пошта " />
             </div>
             <div class="form-group col-md-8">
                 <input type="text" class="form-control" name="Reck" placeholder="Pеквізити замовника" />
-
+            </div>
+        </div>
+        <div class="row" id="LegalClient" style="display:none">
+            <div class="form-group col-md-4">
+                <input type="text" class="form-control" required name="CompanyName" placeholder="Назва" />
+            </div>
+            <div class="form-group col-md-4">
+                <input type="text" class="form-control" name="EDRPOY" placeholder="ЄДРПОУ" />
+            </div>
+            <div class="form-group col-md-4">
+                <input type="text" class="form-control" name="LegalAddress" placeholder="Юридична адреса" />
+            </div>
+            <div class="form-group col-md-4">
+                <input type="text" class="form-control" name="Position" placeholder="Посада підписанта" />
+            </div>
+            <div class="form-group col-md-4">
+                <input type="text" class="form-control" name="SubscriberName" placeholder="ПІП підписанта" />
+            </div>
+            <div class="form-group col-md-4">
+                <input type="tel" class="form-control" required name="Phone" placeholder="Номер телефону" />
+            </div>
+            <div class="form-group col-md-4">
+                <input type="email" class="form-control" name="Email" placeholder="Eлектронна пошта " />
             </div>
         </div>
     </div>
@@ -143,33 +173,28 @@
     <div class="container">
 
         <h5>Власник</h5>
-        <div class="row">
-            <div class="form-group col-md-4">
-                <input type="text" class="form-control" name="OwnerName" placeholder="Назва/ПІБ" />
+        <div id="OwnersContainer">
+            <div class="row Owner">
+                <div class="form-group col-md-4">
+                    <input type="text" class="form-control" name="OwnerName" placeholder="Назва/ПІБ" />
+                </div>
+                <div class="form-group col-md-4">
+                    <input type="number" class="form-control" name="OwnerIPN" placeholder="ЄДРПОУ/ІПН" />
+                </div>
+                <div class="form-group col-md-3">
+                    <input type="text" class="form-control" name="OwnerPart" placeholder="Частка" />
+                </div>
             </div>
-            <div class="form-group col-md-4">
-                <input type="text" class="form-control" name="OwnerIPN" placeholder="ЄДРПОУ/ІПН" />
-            </div>
-            <div class="form-group col-md-4">
-                <input type="tel" class="form-control" name="OwnerTel" placeholder="Kонтактний номер телефону" />
-            </div>
-            <div class="form-group col-md-4">
-                <input type="email" class="form-control" name="OwnerEmail" placeholder="Eлектронна пошта " />
-            </div>
-            <div class="form-group col-md-8">
-                <input type="text" class="form-control" name="OwnerReck" placeholder="Pеквізити власника" />
-
-            </div>
+        </div>
+        <div class="form-group">
+            <button class="btn btn-primary" type="button" id="addOwner">Додати</button>
         </div>
     </div>
     <div class="container">
         <h5>Об'єкти</h5>
-
         <div class="ObjectList">
-
         </div>
         <div class="row addObject">
-
             <div class="form-group col-md-4">
                 <select class="form-control" id="objectSelect" name="ObjectId">
                     @foreach (var obj in ViewBag.Object)
@@ -185,6 +210,20 @@
     </div>
     <div class="container">
         <div class="row">
+            <div class="col-md-4">
+                <h5>Термін виконання замовлення</h5>
+                <div class="form-group">
+                    <input type="number" class="form-control" placeholder="Термін виконання (днів)" name="CountDays" value="@ViewBag.CountDays" />
+                </div>
+            </div>
+            <div class="col-md-4 form-group">
+                <label>Дата оцінки</label>
+                <input type="date" name="DateOfExpert" class="form-control" />
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
             <div class="form-group col-md-4">
                 <h5>Дата надання документів</h5>
                 <input class="form-control" type="date" name="DateOfDocument" title="Якщо поле залишити порожнім, його значення стане датою створення замовлення" />
@@ -193,68 +232,147 @@
     </div>
     <div class="container">
         <h5>Огляд</h5>
-        <div class="row">
-            <div class="form-group col-md-4">
-                <label>ПІБ хто проводив</label>
-                <input type="text" class="form-control" name="Inspector" />
-            </div>
-            <div class="form-group col-md-4">
-                <label>Дата огляду</label>
-                <input type="date" class="form-control" name="InspectionDate" />
-            </div>
-            <div class="form-group col-md-4">
-                <label>Вартість огляду</label>
-                <input type="number" class="form-control" name="InspectionPrice" />
-            </div>
-        </div>
-    </div>
-    <div class="container">
-        <h5>Верифікація</h5>
-        <div class="row">
-            <div class="col-md-4 form-group">
-                <label>Дата оцінки</label>
-                <input type="date" name="DateOfExpert" class="form-control" />
-            </div>
-            <div class="col-md-4 form-group">
-                <label>Дата прийняття на верифікацію</label>
-                <input type="date" name="DateTakeVerification" class="form-control" />
-            </div>
-            <div class="col-md-4 form-group">
-                <label>Дата направлення на верифікацію</label>
-                <input type="date" name="DateDirectVerification" class="form-control" />
-            </div>
-            <div class="col-md-4 form-group">
-                <label>Дата закінчення верифікації</label>
-                <input type="date" name="DateEndVerification" class="form-control" />
-            </div>
-            <div class="col-md-4 form-group">
-                <label>Коментар</label>
-                <input type="text" name="CommentsVerification" class="form-control" />
-            </div>
-        </div>
-    </div>
-    <div class="container">
-        <h5>Передача Звіту Замовнику</h5>
-        <div class="row">        
-            <div class="col-md-4 form-group">
-                <label>Коментар</label>
-                <input type="text" name="CommentsOfTransfer" class="form-control" />
-            </div>
-        </div>
-    </div>
-    <div class="container">
-        <h5>Загальний коментар</h5>
-        <div class="form-group">
-            <textarea class="form-control" name="Comments"></textarea>
-        </div>
-    </div>
-    <div class="container">
-        <div class="row">
-            <div class="col-md-4">
-                <h5>Термін виконання замовлення</h5>
-                <div class="form-group">
-                    <input type="number" class="form-control" placeholder="Термін виконання (днів)" name="CountDays" value="@ViewBag.CountDays" />
+        <div id="Overwatches">
+            <div class="row">
+                <div class="form-group col-md-4">
+                    <label>
+                        ПІП представника
+                    </label>
+                    <input type="text" class="form-control" name="Inspector" />
                 </div>
+                <div class="form-group col-md-3">
+                    <label>Дата огляду</label>
+                    <input type="date" class="form-control" name="InspectionDate" />
+                </div>
+                <div class="form-group col-md-3">
+                    <label>Вартість огляду</label>
+                    <input type="number" class="form-control" name="InspectionPrice" />
+                </div>
+                <div class="form-group col-md-2">
+                    <label>Оплата огляд</label>
+                    <div class="radioBtns">
+                        Так<input type="radio" class="form-control" name="InspectionIsPaid" />
+                        Ні&nbsp;<input type="radio" class="form-control" name="InspectionIsPaid" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4 form-group">
+                <button type="button" class="btn btn-primary" id="addOverwatch">
+                    Додати огляд
+                </button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-4">
+                <label>
+                    Загальна вартість огляду
+                </label>
+                <input type="number" class="form-control" readonly name="SumOverwathes" />
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <h5>
+            Верифікація внутрішня
+        </h5>
+        <div class="row">
+            <div class="col-md-4 form-group">
+                <label>
+                    Хто проводить
+                </label>
+                <select name="InternalVerificater" class="form-control">
+                    <option value="0">Не вибрано</option>
+                    @foreach (var user in ViewBag.Managers)
+                    {
+                        string fullName = $"{user.LastName}  {user.FirstName} {user.MiddleName}";
+
+                        <option value="@user.Id">@fullName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4 form-group">
+                <label>
+                    Прийнято на перевірку
+                </label>
+                <input type="date" name="InternalGetedToCheckVerification" class="form-control" />
+            </div>
+            <div class="col-md-4 form-group">
+                <label>
+                    Завершено перевірку
+                </label>
+                <input type="date" name="InternalDateEndVerification" class="form-control" />
+            </div>
+            <div class="col-md-4 form-group">
+                <label>Коментар</label>
+                <input type="text" name="InternalCommentsVerification" class="form-control" />
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <h5>
+            Верифікація зовнішня
+        </h5>
+        <div class="row">
+            <div class="col-md-4 form-group">
+                <label>
+                    Хто проводить
+                </label>
+                <input type="text" name="ExternalVerificater" class="form-control" />
+            </div>
+            <div class="col-md-4 form-group">
+                <label>
+                    Eлектронна адреса
+                </label>
+                <input type="email" name="ExternalVerificaterEmail" class="form-control" />
+            </div>
+            <div class="col-md-4 form-group">
+                <label>
+                    Відправлено на верифікацію
+                </label>
+                <input type="date" name="ExternalDateDirectVerification" class="form-control" />
+            </div>
+            <div class="col-md-4 form-group">
+                <label>
+                    Повторне відправлення
+                </label>
+                <input type="date" name="ExternalDateRepeatVerification" class="form-control" />
+            </div>
+            <div class="col-md-4 form-group">
+                <label>
+                    Отримання погодження
+                </label>
+                <input type="date" name="ExternalDateEndVerification" class="form-control" />
+            </div>
+            <div class="col-md-4 form-group">
+                <label>Коментар</label>
+                <input type="text" name="ExternalCommentsVerification" class="form-control" />
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <h5>
+            Витрати
+        </h5>
+        <div class="row">
+            <div class="col-md-4 form-group">
+                <label for="TotalPriceOverwatch">
+                    Огляд
+                </label>
+                <input type="number" class="form-control" readonly id="TotalPriceOverwatch"/>
+            </div>
+            <div class="col-md-4 form-group">
+                <label for="PriceReportRegistration">
+                    Реєстрація звіту
+                </label>
+                <input type="number" class="form-control" id="PriceReportRegistration" />
+            </div>
+            <div class="col-md-4 form-group">
+                <label for="TotalCosts">
+                    Загалом витрат
+                </label>
+                <input type="number" class="form-control" readonly id="TotalCosts" />
             </div>
         </div>
     </div>
@@ -344,6 +462,14 @@
                     </div>
                     <button type="button" class="btn btn-success" id="addPrice">Додати</button>
                 </div>
+            </div>
+        </div>
+        <div class="container">
+            <h5>
+                Коментар внутрішній
+            </h5>
+            <div class="form-group">
+                <textarea class="form-control" name="Comments"></textarea>
             </div>
         </div>
     </div>

@@ -15,12 +15,16 @@ using System.Threading;
 using Microsoft.AspNet.Identity;
 using Google.Apis.Download;
 using System.Data;
+using PagedList.Mvc;
+using PagedList;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using System.Text;
 using System.Threading.Tasks;
-
+using WebApplicationMVC.Entities;
+using System.Data.Entity;
+using System.Collections.Generic;
 namespace WebApplicationMVC.Controllers
 {
     [Authorize(Roles = "Admin,Manager")]
@@ -55,21 +59,35 @@ namespace WebApplicationMVC.Controllers
             });
             return service;
         }
-        public ActionResult Index()
+        public ActionResult Index(int[] statuses,int? page=1)
         {
             var userId = User.Identity.GetUserId();
-            var UserApp = db.Users.Where(e => e.Id.Contains(userId)).FirstOrDefault();
-            var UserRole = UserApp.Roles.FirstOrDefault();
             var result = new List<Order>();
-            if (UserRole.RoleId.Contains("1"))
+            if (User.IsInRole("Admin"))
             {
-                result = db.Orders.ToList();
+                result = db.Orders
+                    .Include(e => e.Meta)
+                    .Include(e=>e.Counterparty)
+                    .Include(e=>e.Owners)
+                    .ToList();                
             }
             else
-            {
-                var perfomerses = db.Performerses.Where(e => string.Compare(e.UserId, userId) == 0).Select(e => e.OrderId);
-                result = db.Orders.Where(e => perfomerses.Contains(e.Id)).ToList();
+            {           
+                var perfomerses = db.Performerses.Where(e => e.UserId == userId).Select(e => e.OrderId);
+                result = db.Orders.Where(e => perfomerses.Contains(e.Id))
+                    .Include(e => e.Meta)
+                    .Include(e => e.Counterparty)
+                    .Include(e => e.Owners)
+                    .ToList();
             }
+
+
+            
+            if (statuses != null)
+            {
+                result = result.Where(e => e.StatusId.HasValue && statuses.Contains(e.StatusId.Value)).ToList();
+            }
+
             int[] StatusRange1 = { 4, 5, 6, 7 };
             int[] StatusRange2 = { 1, 2, 3 };
             int[] StatusRange3 = { 8 };
@@ -87,15 +105,26 @@ namespace WebApplicationMVC.Controllers
             finalResult.AddRange(range4);
             finalResult.AddRange(range5);
 
-            return View(finalResult);
+            ViewBag.Analytics = new TypeReport[] {
+            new TypeReport { Id=1,TypeName="Скорочений"},
+            new TypeReport { Id=2,TypeName="Повний"},
+            new TypeReport { Id=3,TypeName="ЗП"}
+            };
+
+            var DbStatuses = db.Statuses.ToList();
+            ViewBag.Statuses = DbStatuses;
+            ViewBag.CheckedStatuses = statuses?.ToList() ?? DbStatuses.Select(e=>e.Id).ToList();
+
+            int pageSize = 25;
+            return View(finalResult.ToPagedList(page.Value, pageSize));
         }
         public async Task<RedirectResult> CreateCopy(int? orderId)
         {
             int id;
             var order = db.Orders.FirstOrDefault(e => e.Id == orderId.Value);
+  
             var newOrder = new Order() {
-                IsPaid = order.IsPaid,
-                IsPaidOverWatch = order.IsPaidOverWatch,
+                IsPaid = false,             
                 MetaId = order.MetaId,
                 BranchId = order.BranchId,
                 ClientId=order.ClientId,
@@ -110,11 +139,11 @@ namespace WebApplicationMVC.Controllers
                 DateOfPay = order.DateOfPay,
                 DateOfTakeVerification = order.DateOfTakeVerification,
                 DateOfTransfer = order.DateOfTransfer,
-                FullNameWatcher = order.FullNameWatcher,
-                OverWatch = order.OverWatch,
-                OwnerId = order.OwnerId,
+                //FullNameWatcher = order.FullNameWatcher,
+                //OverWatch = order.OverWatch,
+                //OwnerId = order.OwnerId,
                 PriceListId = order.PriceListId,
-                PriceOverWatch = order.PriceOverWatch,
+                //PriceOverWatch = order.PriceOverWatch,
                 PropsId = order.PropsId,
                 SourceId = order.SourceId,
                 StatusId = order.StatusId,  
@@ -122,7 +151,7 @@ namespace WebApplicationMVC.Controllers
             };
 
             string month = DateTime.Now.Month <= 9 ? "0" + DateTime.Now.Month : DateTime.Now.Month + "";
-            var lastOrder = db.Orders.Where(e => e.CreatedDate.Value.Month == DateTime.Now.Month && e.CreatedDate.Value.Year == DateTime.Now.Year).ToList().LastOrDefault();
+            var lastOrder = db.Orders.Where(e => e.CreatedDate.Month == DateTime.Now.Month && e.CreatedDate.Year == DateTime.Now.Year).ToList().LastOrDefault();
             int lastCount;
             if (lastOrder == null)
             {
@@ -217,7 +246,7 @@ namespace WebApplicationMVC.Controllers
             {
                 sum += prices[j].Value;
             }
-            var Date = order.CreatedDate.Value;
+            var Date = order.CreatedDate;
             string month = GetMonth(Date.Month);
             string day = Date.Day <= 9 ? "0" + Date.Day : "" + Date.Day;
             string DateStr = $"\"{day}\" {month} {Date.Year}р";
@@ -269,21 +298,21 @@ namespace WebApplicationMVC.Controllers
                         }
                         if (end.Key == "DateExpert")
                         {
-                            DateTime dateExpert;
-                            if (order.OverWatch.HasValue)
-                            {
-                                dateExpert = order.OverWatch.Value.Date;
-                            }
-                            else {
-                                dateExpert = order.CreatedDate.Value.Date;
-                            }
-                            string dayExpert = dateExpert.Day <= 9 ? "0" + dateExpert.Day : "" + dateExpert.Day;
-                            string monthExpert = dateExpert.Month <= 9 ? "0" + dateExpert.Month : "" + dateExpert.Month;
-                            string strDateExpert = dayExpert + "." + monthExpert + "." + dateExpert.Year;
+                            //DateTime dateExpert;
+                            ////if (order.OverWatch.HasValue)
+                            ////{
+                            ////    dateExpert = order.OverWatch.Value.Date;
+                            ////}
+                            ////else {
+                            ////    dateExpert = order.CreatedDate.Value.Date;
+                            ////}
+                            //string dayExpert = dateExpert.Day <= 9 ? "0" + dateExpert.Day : "" + dateExpert.Day;
+                            //string monthExpert = dateExpert.Month <= 9 ? "0" + dateExpert.Month : "" + dateExpert.Month;
+                            //string strDateExpert = dayExpert + "." + monthExpert + "." + dateExpert.Year;
 
-                            var textElement = new Text(strDateExpert);
-                            var runElement = new Run(textElement);
-                            end.Value.InsertBeforeSelf(runElement);
+                            //var textElement = new Text(strDateExpert);
+                            //var runElement = new Run(textElement);
+                            //end.Value.InsertBeforeSelf(runElement);
                         }
                         if (end.Key == "Date")
                         {
@@ -429,9 +458,9 @@ namespace WebApplicationMVC.Controllers
             {
                 sum += prices[j].Value;
             }
-            var day = order.CreatedDate.Value.Day <= 9 ? "0" + order.CreatedDate.Value.Day : "" + order.CreatedDate.Value.Day;
-            string month = GetMonth(order.CreatedDate.Value.Month);
-            string DateStr = $"\"{day}\" {month} { order.CreatedDate.Value.Year}р";
+            var day = order.CreatedDate.Day <= 9 ? "0" + order.CreatedDate.Day : "" + order.CreatedDate.Day;
+            string month = GetMonth(order.CreatedDate.Month);
+            string DateStr = $"\"{day}\" {month} { order.CreatedDate.Year}р";
             var recv = db.Propses.Where(e => e.Id == order.PropsId).FirstOrDefault();
 
             System.IO.DirectoryInfo directory = new DirectoryInfo(Server.MapPath("~/Content/Upload"));
@@ -683,7 +712,7 @@ namespace WebApplicationMVC.Controllers
             {
                 sum += prices[j].Value;
             }
-            var Date = order.CreatedDate.Value;
+            var Date = order.CreatedDate;
             var dateOfEndWork = AddWorkDays(Date, (order.CountDays ?? 10));
             string month = GetMonth(dateOfEndWork.Month);
             string day = dateOfEndWork.Day <= 9 ? "0" + dateOfEndWork.Day : dateOfEndWork.Day + "";
@@ -925,15 +954,15 @@ namespace WebApplicationMVC.Controllers
             }
             order.DateOfPay = model.DateOfPay;
 
-            Client newClient = new Client() { IPN_EDRPOY = model.IPN, Email = model.Email, FullName = model.ClientName, Phone = model.Tel, Props = model.Reckv };
-            db.Clients.Add(newClient);
+            //Client newClient = new Client() { IPN_EDRPOY = model.IPN, Email = model.Email, FullName = model.ClientName, Phone = model.Tel, Props = model.Reckv };
+            //db.Clients.Add(newClient);
 
-            Owner owner = new Owner() { FullName = model.OwnerName, IPN_EDRPOY = model.OwnerIPN, Email = model.OwnerEmail, Props = model.OwnerReckv, Phone = model.OwnerTel };
-            db.Owners.Add(owner);
+            //Owner owner = new Owner() { FullName = model.OwnerName, IPN_EDRPOY = model.OwnerIPN, Email = model.OwnerEmail, Props = model.OwnerReckv, Phone = model.OwnerTel };
+            //db.Owners.Add(owner);
             db.SaveChanges();
 
-            order.ClientId = newClient.Id;
-            order.OwnerId = owner.Id;
+            //order.ClientId = newClient.Id;
+            //order.OwnerId = owner.Id;
 
 
             order.CommentOfTransfer = model.CommentsOfTransfer;
@@ -944,12 +973,12 @@ namespace WebApplicationMVC.Controllers
             order.CommentVerification = model.CommentsVerification;
             order.DateOfExpert = model.DateOfExpert;
 
-            order.FullNameWatcher = model.Inspector;
-            if (model.InspectionDate.HasValue)
-                order.OverWatch = model.InspectionDate.Value;
-            if (model.InspectionPrice.HasValue)
-                order.PriceOverWatch = model.InspectionPrice.Value;
-            order.IsPaidOverWatch = model.PaidOverWatch ?? false;
+            //order.FullNameWatcher = model.Inspector;
+            //if (model.InspectionDate.HasValue)
+            //    order.OverWatch = model.InspectionDate.Value;
+            //if (model.InspectionPrice.HasValue)
+            //    order.PriceOverWatch = model.InspectionPrice.Value;
+            //order.IsPaidOverWatch = model.PaidOverWatch ?? false;
 
             if (model.IsPaid != null)
                 if (model.IsPaid == "true")
@@ -987,8 +1016,8 @@ namespace WebApplicationMVC.Controllers
             order.PropsId = model.ReckvId;
             order.Comments = model.Comments;
             order.CreatedDate = DateTime.Now.AddHours(1);
-            string month = order.CreatedDate.Value.Month <= 9 ? "0" + order.CreatedDate.Value.Month : order.CreatedDate.Value.Month + "";
-            var lastOrder = db.Orders.Where(e => e.CreatedDate.Value.Month == order.CreatedDate.Value.Month && e.CreatedDate.Value.Year == order.CreatedDate.Value.Year).ToList().LastOrDefault();
+            string month = order.CreatedDate.Month <= 9 ? "0" + order.CreatedDate.Month : order.CreatedDate.Month + "";
+            var lastOrder = db.Orders.Where(e => e.CreatedDate.Month == order.CreatedDate.Month && e.CreatedDate.Year == order.CreatedDate.Year).ToList().LastOrDefault();
             int lastCount;
             if (lastOrder == null)
             {
@@ -999,7 +1028,7 @@ namespace WebApplicationMVC.Controllers
                 lastCount = Convert.ToInt32(lastOrder.Name.Substring(6));
             }
 
-            string Name = order.CreatedDate.Value.Year + "" + month + String.Format("{0:0000}", lastCount + 1);
+            string Name = order.CreatedDate.Year + "" + month + String.Format("{0:0000}", lastCount + 1);
             order.Name = Name;
 
             if (model.CountDays.HasValue)
@@ -1055,17 +1084,17 @@ namespace WebApplicationMVC.Controllers
             order.DateOfPay = model.DateOfPay;
             //Client
 
-            Client client = new Client() { FullName = model.ClientName, IPN_EDRPOY = model.IPN, Email = model.Email, Props = model.Reckv, Phone = model.Tel };
-            db.Clients.Add(client);
-            db.SaveChanges();
-            order.ClientId = client.Id;
+            //Client client = new Client() { FullName = model.ClientName, IPN_EDRPOY = model.IPN, Email = model.Email, Props = model.Reckv, Phone = model.Tel };
+            //db.Clients.Add(client);
+            //db.SaveChanges();
+            //order.ClientId = client.Id;
 
-            //Owner
+            ////Owner
 
-            Owner owner = new Owner() { FullName = model.OwnerName, IPN_EDRPOY = model.OwnerIPN, Email = model.OwnerEmail, Props = model.OwnerReckv, Phone = model.OwnerTel };
-            db.Owners.Add(owner);
-            db.SaveChanges();
-            order.OwnerId = owner.Id;
+            //Owner owner = new Owner() { FullName = model.OwnerName, IPN_EDRPOY = model.OwnerIPN, Email = model.OwnerEmail, Props = model.OwnerReckv, Phone = model.OwnerTel };
+            //db.Owners.Add(owner);
+            //db.SaveChanges();
+            //order.OwnerId = owner.Id;
 
             order.CommentOfTransfer = model.CommentsOfTransfer;
             order.DateOfTransfer = model.DateOfTransfer;
@@ -1073,10 +1102,10 @@ namespace WebApplicationMVC.Controllers
             order.DateOfEndVerification = model.DateEndVerification;
             order.DateOfDirectVerification = model.DateDirectVerification;
             order.CommentVerification = model.CommentsVerification;
-            order.FullNameWatcher = model.Inspector ?? "";
-            order.OverWatch = model.InspectionDate;
-            if (model.InspectionPrice.HasValue)
-                order.PriceOverWatch = model.InspectionPrice.Value;
+            //order.FullNameWatcher = model.Inspector ?? "";
+            //order.OverWatch = model.InspectionDate;
+            //if (model.InspectionPrice.HasValue)
+            //    order.PriceOverWatch = model.InspectionPrice.Value;
 
 
             if (model.IsPaid != null)
@@ -1158,23 +1187,25 @@ namespace WebApplicationMVC.Controllers
             ViewBag.BranchId = result.BranchId;
             ViewBag.CountDays = result.CountDays;
             var firstSources = db.Sources.FirstOrDefault();
+
             ViewBag.Branches = db.Branches.Where(e => e.SourceId == (result.SourceId ?? firstSources.Id)).ToList();
+            ViewBag.DatesDocument = db.DateDocuments.Where(e => e.OrderId == result.Id).ToList();
             ViewBag.Users = db.Performerses.Where(e => e.OrderId == Id).Select(e => e.UserId).ToList();
             ViewBag.Client = db.Clients.Where(e => e.Id == result.ClientId).FirstOrDefault();
-            ViewBag.Owner = db.Owners.Where(e => e.Id == result.OwnerId).FirstOrDefault();
-            ViewBag.Overwiever = result.FullNameWatcher;
-            ViewBag.DatesDocument = db.DateDocuments.Where(e => e.OrderId == result.Id).ToList();
-            System.Text.StringBuilder tmpDate = new System.Text.StringBuilder("");
-            if (result.OverWatch.HasValue)
-            {
-                tmpDate.Append(result.OverWatch.Value.Year + "");
-                tmpDate.Append("-" + (result.OverWatch.Value.Month <= 9 ? "0" + result.OverWatch.Value.Month : result.OverWatch.Value.Month + ""));
-                tmpDate.Append("-" + (result.OverWatch.Value.Day <= 9 ? "0" + result.OverWatch.Value.Day : result.OverWatch.Value.Day + ""));
-            }
-            ViewBag.DateTimeOverWatch = tmpDate;
-            if (result.PriceOverWatch.HasValue)
-                ViewBag.PriceOverWatch = (int)result.PriceOverWatch.Value;
-            ViewBag.IsPaidOverWatch = result.IsPaidOverWatch;
+           // ViewBag.Owner = db.Owners.Where(e => e.Id == result.OwnerId).FirstOrDefault();
+            //ViewBag.Overwiever = result.FullNameWatcher;
+           
+            //System.Text.StringBuilder tmpDate = new System.Text.StringBuilder("");
+            //if (result.OverWatch.HasValue)
+            //{
+            //    tmpDate.Append(result.OverWatch.Value.Year + "");
+            //    tmpDate.Append("-" + (result.OverWatch.Value.Month <= 9 ? "0" + result.OverWatch.Value.Month : result.OverWatch.Value.Month + ""));
+            //    tmpDate.Append("-" + (result.OverWatch.Value.Day <= 9 ? "0" + result.OverWatch.Value.Day : result.OverWatch.Value.Day + ""));
+            //}
+            //ViewBag.DateTimeOverWatch = tmpDate;
+            //if (result.PriceOverWatch.HasValue)
+            //    ViewBag.PriceOverWatch = (int)result.PriceOverWatch.Value;
+            //ViewBag.IsPaidOverWatch = result.IsPaidOverWatch;
 
             ViewBag.Comments = result.Comments;
             ViewBag.IsPaid = result.IsPaid;

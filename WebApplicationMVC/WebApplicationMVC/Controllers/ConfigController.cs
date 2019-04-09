@@ -218,7 +218,7 @@ namespace WebApplicationMVC.Controllers
             }
             catch (Exception ex)
             {
-                return Content("Виникла помилка");
+                return Content("Виникла помилка "+ex.Message);
             }
         }
         private async Task ChangeSourcesCounterparty(string counterpartyId, int[] model)

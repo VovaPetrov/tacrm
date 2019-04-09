@@ -5,6 +5,7 @@
     WebApplicationMVC.Models.ApplicationUser user =null;
     if (userId != null)
     {
+       
        user = new ApplicationDbContext().Users.Where(e => e.Id == userId).FirstOrDefault();
     }
 }

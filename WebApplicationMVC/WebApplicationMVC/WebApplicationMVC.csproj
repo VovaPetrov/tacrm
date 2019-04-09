@@ -321,9 +321,18 @@
     <Compile Include="Controllers\MissionsController.cs" />
     <Compile Include="Controllers\OrderController.cs" />
     <Compile Include="Data\ApplicationDbContext.cs" />
+    <Compile Include="Entities\Client.cs" />
+    <Compile Include="Entities\LegalClient.cs" />
+    <Compile Include="Entities\Order.cs" />
+    <Compile Include="Entities\OrderOverwatch.cs" />
+    <Compile Include="Entities\OrderOwner.cs" />
+    <Compile Include="Entities\Overwatch.cs" />
+    <Compile Include="Entities\Owner.cs" />
+    <Compile Include="Entities\Performers.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\UrlHelper.cs" />
     <Compile Include="Migrations\201811021443302_DataMigr.cs" />
     <Compile Include="Migrations\201811021443302_DataMigr.Designer.cs">
       <DependentUpon>201811021443302_DataMigr.cs</DependentUpon>
@@ -371,6 +380,30 @@
     <Compile Include="Migrations\201903111423336_Added counterparty entities.cs" />
     <Compile Include="Migrations\201903111423336_Added counterparty entities.Designer.cs">
       <DependentUpon>201903111423336_Added counterparty entities.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903211710552_Added more Owners,LegalClients,Overwatches.cs" />
+    <Compile Include="Migrations\201903211710552_Added more Owners,LegalClients,Overwatches.Designer.cs">
+      <DependentUpon>201903211710552_Added more Owners,LegalClients,Overwatches.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903230948010_Chanched Order entity.cs" />
+    <Compile Include="Migrations\201903230948010_Chanched Order entity.Designer.cs">
+      <DependentUpon>201903230948010_Chanched Order entity.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903231051590_Chanched Order entity 2.cs" />
+    <Compile Include="Migrations\201903231051590_Chanched Order entity 2.Designer.cs">
+      <DependentUpon>201903231051590_Chanched Order entity 2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903231107411_Chanched Order entity 3.cs" />
+    <Compile Include="Migrations\201903231107411_Chanched Order entity 3.Designer.cs">
+      <DependentUpon>201903231107411_Chanched Order entity 3.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903231116001_Chanched Order entity 4.cs" />
+    <Compile Include="Migrations\201903231116001_Chanched Order entity 4.Designer.cs">
+      <DependentUpon>201903231116001_Chanched Order entity 4.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201903231301371_Chanched Order entity 5.cs" />
+    <Compile Include="Migrations\201903231301371_Chanched Order entity 5.Designer.cs">
+      <DependentUpon>201903231301371_Chanched Order entity 5.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
@@ -574,6 +607,8 @@
     <Content Include="Content\images\user.png" />
     <Content Include="Content\main.css" />
     <Content Include="Content\Messenger.css" />
+    <Content Include="Content\MultiSelectDropdown\dropdown.css" />
+    <Content Include="Content\MultiSelectDropdown\dropdown.js" />
     <Content Include="Content\Orders.css" />
     <Content Include="Content\PagedList.css" />
     <Content Include="Content\tasks.css" />
@@ -683,7 +718,7 @@
     <Folder Include="Content\Upload\" />
     <Folder Include="Content\zips\" />
     <Folder Include="Models\Config\" />
-    <Folder Include="Repositories\" />
+    <Folder Include="Repositories\Interfaces\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />
@@ -734,6 +769,24 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201903111423336_Added counterparty entities.resx">
       <DependentUpon>201903111423336_Added counterparty entities.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903211710552_Added more Owners,LegalClients,Overwatches.resx">
+      <DependentUpon>201903211710552_Added more Owners,LegalClients,Overwatches.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903230948010_Chanched Order entity.resx">
+      <DependentUpon>201903230948010_Chanched Order entity.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903231051590_Chanched Order entity 2.resx">
+      <DependentUpon>201903231051590_Chanched Order entity 2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903231107411_Chanched Order entity 3.resx">
+      <DependentUpon>201903231107411_Chanched Order entity 3.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903231116001_Chanched Order entity 4.resx">
+      <DependentUpon>201903231116001_Chanched Order entity 4.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201903231301371_Chanched Order entity 5.resx">
+      <DependentUpon>201903231301371_Chanched Order entity 5.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

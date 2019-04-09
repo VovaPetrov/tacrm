@@ -1,123 +1,214 @@
-﻿@using Microsoft.AspNet.Identity;
-@using WebApplicationMVC.Models
+﻿@model PagedList.IPagedList<WebApplicationMVC.Entities.Order>
+@using PagedList.Mvc;
+@using WebApplicationMVC.Helpers;
 @{
-
+    var db = new ApplicationDbContext();
 }
-
-    <div class="row">
-        
-        <div class="col-md-6">
-            <h6>Пошук замовлень</h6>
-            <form method="get" action="/Order/Search">
-                <div class="row">
-
-
-                    <div class="col-md-10"><input type="search" class="form-control" name="Value" placeholder="Пошук по атрибутах" /></div>
-                    <div class="col-md-2"><button class="btn btn-primary" type="submit">Найти</button></div>
-
-                </div>
-            </form>
-        </div>
-        <div class="col-md-6">
-            <form method="get" action="/Order/GetReports">
-                <h6>Вибір дати для звіту по замовленнях</h6>
-                <div class="row">
-                    <div class="col-md-4">
-                        <input type="text" name="date1" placeholder="Початок" class="form-control datepickerFrom" autocomplete="off" required />
+<div class="row">
+    <div class="col-md-6 SearchOrders">
+        <h6>Пошук замовлень</h6>
+        <form method="get" action="/Order/Search">
+            <div class="row">
+                <div class="col-md-8"><input type="search" class="form-control" name="Value" placeholder="Пошук по атрибутах" /></div>
+                <div class="col-md-2"><button class="btn btn-primary" type="submit">Найти</button></div>
+            </div>
+        </form>
+    </div>
+    <form method="get" action="/Order/Index" class="col-md-6">
+        <h6> Фільтрація статусів</h6>
+        <div class="checkStatuses">
+            <dl class="dropdown">
+                <dt>
+                    <a href="#">
+                        <span class="hida btn btn-info">Статуси</span>
+                        <p class="multiSel"></p>
+                    </a>
+                </dt>
+                <dd>
+                    <div class="mutliSelect">
+                        <ul>
+                            @foreach(var item in ViewBag.Statuses)
+                            {
+                            <li>
+                                @if (ViewBag.CheckedStatuses == null)
+                                {
+                                    <input type="checkbox" value="@item.Id" name="statuses" checked />@item.Content
+                                }
+                                else
+                                {
+                                    <input type="checkbox" value="@item.Id" name="statuses" 
+                                           @if (ViewBag.CheckedStatuses.Contains(item.Id))
+                                                { @:checked
+                                           } />@item.Content
+                                }
+                            </li>
+                            }
+                        </ul>
                     </div>
-                    <div class="col-md-4">
-                        <input type="text" placeholder="Кінець" name="date2" class="form-control datepickerTo " autocomplete="off" required />
-                    </div>
-                    <div class="col-md-2"><button class="btn btn-primary" type="submit">Отримати</button></div>
-                </div>
-            </form>
+                </dd>
+            </dl>
+            <div>
+                <button type="submit" class="btn btn-primary updateStatuses">Застосувати</button>
+            </div>
         </div>
+    </form>
 </div>
 
-
-<hr />
-<div class="orders">
-    <table id="orderTable">
-
-        <tr>
-            <th>Номер</th>
-            <th>Клієнт</th>
-            <th>Дата реєстрації</th>
-            <th>Назва папки</th>
-            <th>Мета оцінки</th>
-            <th>Статус роботи</th>
-            <th>Джерело замовлення</th>
-            <th>Наявність оплати</th>
-        </tr>
-
-        @foreach (var order in Model)
-        {
-            var color = "colorId" + order.StatusId;
-            var db = new ApplicationDbContext();
-            int ClientId = order.ClientId;
-            var ClientName = db.Clients.Where(e => e.Id == ClientId).FirstOrDefault();
-            string FullName = "";
-            if (ClientName != null)
-            {
-                FullName = ClientName.FullName;
-            }
-
-            string MetaContent = "";
-            if (order.MetaId != null)
-            {
-                int MetaId = order.MetaId;
-                MetaContent = db.Metas.Where(e => e.Id == MetaId).FirstOrDefault()?.Content;
-            }
-            int StatusId = order.StatusId;
-            var Status = db.Statuses.Where(e => e.Id == StatusId).FirstOrDefault();
-            int? SourceId = order.SourceId;
-            var Source = db.Sources.Where(e => e.Id == SourceId).FirstOrDefault();
-            string IsPaidTxt = "";
-            if (order.IsPaid == true)
-            {
-                IsPaidTxt = "Оплачено";
-            }
-            else
-            {
-                IsPaidTxt = "Не оплачено";
-            }
-
-            <tr class="@color Order">
-                <td class="OrderId" style="display:none">@order.Id</td>
-                <td>@order.Name</td>
-                <td>
-                    @FullName
-                </td>
-                <td>
-                    @order.CreatedDate.ToString("dd.MM.yyyy HH:mm")
-                </td>
-                <td>Замовлення: @order.Name</td>
-                <td>
-                    @MetaContent
-                </td>
-                <td>
-                    @Status.Content
-                </td>
-                <td>
-                    @{ if (Source != null)
+<div class="row">
+    <div class="col-md-12 GenerateReport">
+        <h6>Генерація звіту по замовленнях</h6>
+        <form method="get" action="/Order/GetReports">
+            <div class="row">
+                <div class="col-md-4">
+                    <select class="form-control">
+                        @foreach (var item in ViewBag.Analytics)
                         {
-                            @Source.SourceName
+                            <option value="@item.Id">@item.TypeName</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <input type="date" id="date1" name="date1" placeholder="Початок" class="form-control datepickerFrom" autocomplete="off" required />
+                </div>
+                <div class="col-md-2">
+                    <input type="date" id="date2" placeholder="Кінець" name="date2" class="form-control datepickerTo" autocomplete="off" required />
+                </div>
+                <div class="col-md-1"><button class="btn btn-primary" type="submit">Отримати</button></div>
+            </div>
+        </form>
+    </div>
+</div>
+<hr />
+<div id="orderTable" class="container-fluid">
+    <div class="row tableRow contentToHideAtSmall">
+        <div class="tableCell col-md-1">Номер </div>
+        <div class="tableCell col-md-1">Клієнт</div>
+        <div class="tableCell col-md-1">Дата</div>
+        <div class="tableCell col-md-1">Власник</div>
+        <div class="tableCell col-md-1">Виконавець</div>
+        <div class="tableCell col-md-1">Мета</div>
+        <div class="tableCell col-md-1">Контрагент</div>
+        <div class="tableCell col-md-1">Вартість</div>
+        <div class="tableCell col-md-1">Витрати</div>
+        <div class="tableCell col-md-1">Оплата</div>
+        <div class="tableCell col-md-1">Посилання</div>
+    </div>
+
+    @foreach (var order in Model)
+    {
+        <a href="/Order/Get?Id=@order.Id" class="colorId_@order.StatusId tableRow row">
+            <div class="tableCell col-lg-1">@order.Name</div>
+            <div class="tableCell col-lg-1">
+                @{
+                    int ClientId = order.ClientId;
+                    if (order.IsLegalClient)
+                    {
+                        var client = db.LegalClients.FirstOrDefault(e => e.Id == ClientId);
+                        if (client != null)
+                        {
+                            @client.CompanyName
                         }
                     }
-                </td>
-                <td>
-                    @IsPaidTxt
-                </td>
-            </tr>
+                    else
+                    {
+                        var client = db.Clients.FirstOrDefault(e => e.Id == ClientId);
+                        if (client != null)
+                        {
+                            @client.FullName
+                        }
+                    }
+                }
+            </div>
+            <div class="tableCell col-lg-1">@order.CreatedDate.ToString("dd.MM.yyyy")</div>
+            <div class="tableCell col-lg-1">
+                @foreach (var item in order.Owners)
+                {
+                    @(item.FullName + " " + item.Part + ";")
+                }
+            </div>
+            <div class="tableCell col-lg-1" style="overflow: hidden;text-overflow: ellipsis;">
 
+                @{
+
+                    int orderId = order.Id;
+                    var performers = db.Performerses.Where(e => e.OrderId == orderId).Select(e => e.User);
+                    System.Text.StringBuilder str = new System.Text.StringBuilder(120);
+                    foreach (var item in performers)
+                    {
+                        str.Append(item.LastName + ", ");
+
+                    }
+                    if (str.Length >= 2)
+                    {
+                        str.Length -= 2;
+                    }
+                    @str.ToString()
+                }
+
+            </div>
+            <div class="tableCell col-lg-1">
+                @if (order.Meta != null)
+                {
+                    @order.Meta.Content
+                }
+            </div>
+            <div class="tableCell col-lg-1">
+                @{
+                    if (order.Counterparty != null)
+                    {
+                        string strCounterparty = order.Counterparty.LastName;
+                        if (!string.IsNullOrEmpty(order.Counterparty.FirstName))
+                        {
+                            strCounterparty += " " + order.Counterparty.FirstName;
+                        }
+                        if (!string.IsNullOrEmpty(order.Counterparty.MiddleName))
+                        {
+                            strCounterparty += " " + order.Counterparty.MiddleName;
+                        }
+                        @strCounterparty
+                    }
+                }
+            </div>
+            <div class="tableCell col-lg-1">
+                1700
+            </div>
+            <div class="tableCell col-lg-1">
+                1230
+            </div>
+            <div class="tableCell col-lg-1">
+                @if (order.IsPaid == true)
+                {
+                    @:Так
+                }
+                else
+                {
+                    @:Ні
+                }
+            </div>
+            <div class="tableCell col-lg-1">
+                @{
+                    string url = "https://drive.google.com/drive/u/0/folders/" + order.DirectoryId;
+                    <span class="filesLink btn btn-success" data-url="@url"><i class="fas fa-cloud-download-alt"></i></span>
+                }
+            </div>
+        </a>
+    }
+    @{ 
+
+
+        string statuses = string.Empty;
+        if (ViewBag.CheckedStatuses != null)
+        {
+            statuses=((IEnumerable<int>)ViewBag.CheckedStatuses).ToUrlArray("statuses", false);
         }
-
-    </table>
+    }
+    @Html.PagedListPager(Model,  page => "Index?page="+page+statuses)
 </div>
 @section Orders{
-
     <link href="~/Content/Orders.css" rel="stylesheet" />
     <script src="~/Scripts/Orders.js"></script>
-
+    <link href="~/Content/MultiSelectDropdown/dropdown.css" rel="stylesheet" />
+    <script src="~/Content/MultiSelectDropdown/dropdown.js"></script>
+   
 }
 

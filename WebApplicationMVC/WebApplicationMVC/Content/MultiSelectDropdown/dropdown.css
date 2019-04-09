@@ -1,0 +1,51 @@
+﻿.dropdown {
+    z-index: 1111;
+    position:relative
+}
+.dropdown dd, .dropdown dt {
+    margin: 0px;
+    padding: 0px;
+}
+.dropdown dd {
+    position: relative;
+}
+.dropdown a, .dropdown a:visited {
+    color: black;
+    text-decoration: none;
+    outline: none;
+    font-size: 12px;
+}
+.dropdown dt a {
+    display: block;
+    line-height: 24px;
+    overflow: hidden;
+    border: 0;
+    width: 272px;
+}
+.dropdown dt a span, .multiSel span {
+    cursor: pointer;
+    display: inline-block;
+}
+.dropdown dd ul {
+    background-color: white;
+    border: 0;
+    color: black;
+    display: none;
+    left: 0px;
+    padding: 2px 15px 2px 5px;
+    position: absolute;
+    top: 2px;
+    width: 280px;
+    list-style: none;
+    height: 272px;
+    overflow: auto;
+}
+.dropdown span.value {
+    display: none;
+}
+.dropdown dd ul li a {
+    display: block;
+}
+.dropdown dd ul li a:hover {
+    background-color: #fff;
+}

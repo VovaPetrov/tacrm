@@ -267,3 +267,9 @@ D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.
 D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.Migrations.AddedSignatoriesIdtoOrder3.resources
 D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.Migrations.AddedSignatoriesIdtoOrderfinal.resources
 D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.Migrations.Addedcounterpartyentities.resources
+D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.Migrations.AddedmoreOwnersLegalClientsOverwatches.resources
+D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.Migrations.ChanchedOrderentity.resources
+D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.Migrations.ChanchedOrderentity2.resources
+D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.Migrations.ChanchedOrderentity3.resources
+D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.Migrations.ChanchedOrderentity4.resources
+D:\TA-CRM\tacrm\WebApplicationMVC\WebApplicationMVC\obj\Debug\WebApplicationMVC.Migrations.ChanchedOrderentity5.resources

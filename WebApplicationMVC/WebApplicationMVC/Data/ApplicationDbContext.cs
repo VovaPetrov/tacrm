@@ -5,20 +5,23 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web;
 using WebApplicationMVC.Models;
-
+using WebApplicationMVC.Entities;
 namespace WebApplicationMVC
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext()
             : base("DefaultConnection", throwIfV1Schema: false) { }
-
+      
         public DbSet<Order> Orders { get; set; }
+        public DbSet<Overwatch> Overwatches { get; set; }
+        public DbSet<OrderOverwatch> OrderOverwatches { get; set; }
         public DbSet<Price> Prices { get; set; }
         public DbSet<PriceList> PriceLists { get; set; }
         public DbSet<Props> Propses { get; set; }
         public DbSet<Branch> Branches { get; set; }
         public DbSet<Client> Clients { get; set; }
+        public DbSet<LegalClient> LegalClients { get; set; }
         public DbSet<ObjectType> Objects { get; set; }
         public DbSet<ObjectList> ObjectLists { get; set; }
         public DbSet<ObjectDesc> ObjectDesces { get; set; }
@@ -34,6 +37,7 @@ namespace WebApplicationMVC
         public DbSet<Status> Statuses { get; set; }
         public DbSet<ObjectValues> ObjectValues { get; set; }
         public DbSet<Owner> Owners { get; set; }
+        public DbSet<OrderOwner> OrderOwners { get; set; }
         public DbSet<DateDocument> DateDocuments { get; set; }
         public DbSet<Unread> Unread { get; set; }
         public DbSet<AnalyticsCounterparty> AnalyticsCounterparties { get; set; }
