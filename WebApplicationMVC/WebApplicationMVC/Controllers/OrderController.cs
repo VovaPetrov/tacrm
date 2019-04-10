@@ -72,6 +72,7 @@ namespace WebApplicationMVC.Controllers
         {
             int id;
             var order = db.Orders.FirstOrDefault(e => e.Id == orderId.Value);
+    
             var newOrder = new Order() {
                 IsPaid = false,
                 IsPaidOverWatch = order.IsPaidOverWatch,
@@ -92,11 +93,11 @@ namespace WebApplicationMVC.Controllers
                 FullNameWatcher = order.FullNameWatcher,
                 OverWatch = order.OverWatch,
                 OwnerId = order.OwnerId,
-                PriceListId = order.PriceListId,
+             
                 PriceOverWatch = order.PriceOverWatch,
                 PropsId = order.PropsId,
                 SourceId = order.SourceId,
-                StatusId = db.Statuses.FirstOrDefault(e=>e.Content.Contains("Переговори"))?.Id,  
+                StatusId = db.Statuses.FirstOrDefault(e=>e.Content=="Переговори")?.Id,  
                 CounterpartyId = order.CounterpartyId,
             };
 
@@ -127,9 +128,13 @@ namespace WebApplicationMVC.Controllers
                 }
             }
             db.Orders.Add(newOrder);
+            var priceList = new PriceList();
+            db.PriceLists.Add(priceList);
             await db.SaveChangesAsync();
             id = newOrder.Id;
-
+            newOrder.PriceListId = priceList.Id;
+            
+           
             string folder = CreateFolder("Замовлення: " + newOrder.Name);
             newOrder.DirectoryId = folder;
 
